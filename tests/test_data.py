@@ -49,3 +49,28 @@ def test_every_team_in_a_group_has_a_rating():
     ratings = data.load_ratings()
     missing = [t for t in data.all_teams() if t not in ratings]
     assert not missing, f"Missing ratings for: {missing}"
+
+
+def test_load_hosts_returns_world_cup_2026_hosts():
+    assert set(data.load_hosts()) == {"USA", "Canada", "Mexico"}
+
+
+def test_load_match_history_empty_when_file_absent(tmp_path, monkeypatch):
+    monkeypatch.setattr(data, "HISTORY_FILE", tmp_path / "match_history.json")
+    data.load_match_history.cache_clear()
+    assert data.load_match_history() == []
+    data.load_match_history.cache_clear()
+
+
+def test_append_match_history_persists_entries(tmp_path, monkeypatch):
+    monkeypatch.setattr(data, "HISTORY_FILE", tmp_path / "match_history.json")
+    data.load_match_history.cache_clear()
+
+    entry = {
+        "home": "France", "away": "Brazil", "score_home": 2, "score_away": 1,
+        "rating_home_pre": 2000.0, "rating_away_pre": 1990.0, "outcome": "home_win",
+    }
+    data.append_match_history(entry)
+    assert data.load_match_history() == [entry]
+
+    data.load_match_history.cache_clear()

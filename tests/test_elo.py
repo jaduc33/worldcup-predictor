@@ -84,6 +84,21 @@ def test_most_likely_scores_are_ranked_descending():
     assert probs == sorted(probs, reverse=True)
 
 
+def test_expected_score_rounds_each_side_independently():
+    assert elo.expected_score(2.08, 0.75) == "2-1"
+    assert elo.expected_score(AVG_GOALS, AVG_GOALS) == "1-1"
+
+
+def test_expected_score_can_differ_from_most_likely_score():
+    # The joint mode collapses to "2-0" here, but the rounded means give "2-1".
+    assert elo.most_likely_scores(2.08, 0.75, top_n=1)[0]["score"] == "2-0"
+    assert elo.expected_score(2.08, 0.75) == "2-1"
+
+
+def test_expected_score_clamps_to_max_goals():
+    assert elo.expected_score(6.655, 0.235, max_goals=6) == "6-0"
+
+
 def test_advance_probability_equal_ratings_is_half():
     assert elo.advance_probability(1900, 1900) == pytest.approx(0.5)
 
