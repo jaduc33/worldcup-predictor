@@ -1,32 +1,51 @@
 """MCP tools: group-stage projection and single-elimination knockout predictions."""
 
-from server.core import bracket, data, elo, standings
+from server.core import bracket, data, elo, h2h, simulation, standings
+from server.core import football_api as api
+from server.core import ratings_effective as reff
+from server.core.config import MONTE_CARLO_ITERATIONS
 
 
-def _predict_knockout(team_a: str, team_b: str) -> dict:
-    rating_a, rating_b = data.rating_of(team_a), data.rating_of(team_b)
+def _predict_knockout(team_a: str, team_b: str, use_h2h: bool = False) -> dict:
+    rating_a = reff.effective_rating(team_a)
+    rating_b = reff.effective_rating(team_b)
+    advantage = reff.effective_advantage(team_a, team_b)
 
-    p = elo.match_probabilities(rating_a, rating_b)
+    p = elo.match_probabilities(rating_a, rating_b, advantage=advantage)
+
+    h2h_applied = False
+    if use_h2h:
+        try:
+            raw_sorted = sorted(api.head_to_head(team_a, team_b), key=lambda fx: fx["fixture"]["date"], reverse=True)
+            simplified = [api.simplify_fixture(fx) for fx in raw_sorted]
+            h2h_p = h2h.h2h_probabilities(simplified, team_a=team_a)
+            if h2h_p is not None:
+                p = h2h.blend_probabilities(p, h2h_p)
+                h2h_applied = True
+        except api.APIFootballError:
+            pass  # graceful fallback to pure Elo -- no API key, quota, or fetch error
+
     probs_90min = {
         f"{team_a}_win": round(p["win"], 3),
         "draw": round(p["draw"], 3),
         f"{team_b}_win": round(p["loss"], 3),
     }
 
-    lambda_a, lambda_b = elo.expected_goals(rating_a, rating_b)
+    lambda_a, lambda_b = elo.expected_goals(rating_a, rating_b, advantage=advantage)
     top_scores = elo.most_likely_scores(lambda_a, lambda_b)
 
-    advance_a = elo.advance_probability(rating_a, rating_b)
+    advance_a = elo.advance_probability(rating_a, rating_b, advantage=advantage)
     advance = {team_a: round(advance_a, 3), team_b: round(1 - advance_a, 3)}
 
     return {
         "team_a": team_a,
         "team_b": team_b,
         "probabilities_90min": probs_90min,
-        "exact_score": top_scores[0]["score"],
+        "exact_score": elo.expected_score(lambda_a, lambda_b),
         "top_scores": top_scores,
         "advance_probability": advance,
         "favorite_to_advance": max(advance, key=advance.get),
+        "h2h_applied": h2h_applied,
         "note": "Match nul après 90 min -> prolongation/tirs au but ; "
                 "advance_probability inclut un léger avantage à l'équipe favorite aux tirs au but.",
     }
@@ -96,12 +115,38 @@ def register(mcp):
         }
 
     @mcp.tool
-    def predict_knockout_match(team_a: str, team_b: str) -> dict:
-        """Predict a single-elimination match: 1X2 (90 min), exact score, and who advances."""
+    def predict_knockout_match(team_a: str, team_b: str, use_h2h: bool = False) -> dict:
+        """Predict a single-elimination match: 1X2 (90 min), exact score, and who advances.
+
+        Set use_h2h=True to blend in historical head-to-head results (requires
+        API_FOOTBALL_KEY; falls back silently to pure Elo if unavailable).
+        """
         try:
-            return _predict_knockout(team_a, team_b)
+            return _predict_knockout(team_a, team_b, use_h2h=use_h2h)
         except KeyError as exc:
             return {"error": str(exc)}
+
+    @mcp.tool
+    def simulate_groups_monte_carlo(iterations: int | None = None) -> dict:
+        """Run a Monte Carlo simulation of all 12 group stages (default
+        MONTE_CARLO_ITERATIONS iterations) and return per-team qualification
+        probabilities: P(1st), P(2nd), P(3rd), P(4th), P(best third), P(qualify).
+
+        Unlike simulate_all_groups (expected-value projection), this simulates
+        each of the 6 group matches to a discrete result + scoreline per
+        iteration, using the official points/GD/GF tiebreak order (ties beyond
+        that broken randomly per iteration -- fair-play and the draw of lots
+        aren't modelled).
+        """
+        n = iterations or MONTE_CARLO_ITERATIONS
+        result = simulation.run_simulation(iterations=n)
+        return {
+            "iterations": result["iterations"],
+            "teams": result["teams"],
+            "note": "Egalite totale (points, diff. de buts, buts marques) departagee "
+                    "aleatoirement a chaque iteration -- fair-play et tirage au sort "
+                    "non modelises. " + standings.TIEBREAK_NOTE,
+        }
 
     @mcp.tool
     def simulate_round_of_32() -> dict:

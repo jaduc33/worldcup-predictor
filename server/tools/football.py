@@ -17,18 +17,6 @@ def _is_world_cup(fx: dict) -> bool:
     return fx["league"]["id"] == api.WORLD_CUP_LEAGUE_ID
 
 
-def _simplify_fixture(fx: dict) -> dict:
-    fixture, teams, goals = fx["fixture"], fx["teams"], fx["goals"]
-    return {
-        "date": fixture["date"],
-        "status": fixture["status"]["long"],
-        "venue": (fixture.get("venue") or {}).get("name"),
-        "home": teams["home"]["name"],
-        "away": teams["away"]["name"],
-        "score": f"{goals['home']}-{goals['away']}" if goals["home"] is not None else None,
-    }
-
-
 def register(mcp):
     @mcp.tool
     def get_match_schedule(date: str | None = None, group: str | None = None) -> dict:
@@ -44,7 +32,7 @@ def register(mcp):
             return {"error": str(exc)}
 
         wc = [fx for fx in raw if _is_world_cup(fx)]
-        simplified = [_simplify_fixture(fx) for fx in wc]
+        simplified = [api.simplify_fixture(fx) for fx in wc]
 
         if group:
             g = group.upper()
@@ -64,7 +52,7 @@ def register(mcp):
             return {"error": str(exc)}
 
         wc = [fx for fx in raw if _is_world_cup(fx)]
-        return {"count": len(wc), "matches": [_simplify_fixture(fx) for fx in wc]}
+        return {"count": len(wc), "matches": [api.simplify_fixture(fx) for fx in wc]}
 
     @mcp.tool
     def get_head_to_head(team_a: str, team_b: str, last: int = 5) -> dict:
@@ -78,7 +66,7 @@ def register(mcp):
         return {
             "team_a": team_a,
             "team_b": team_b,
-            "matches": [_simplify_fixture(fx) for fx in raw_sorted[:last]],
+            "matches": [api.simplify_fixture(fx) for fx in raw_sorted[:last]],
         }
 
     @mcp.tool

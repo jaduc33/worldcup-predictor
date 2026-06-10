@@ -8,6 +8,7 @@ drawing of lots aren't modelled.
 """
 
 from server.core import data, elo
+from server.core import ratings_effective as reff
 
 TIEBREAK_NOTE = (
     "Classement basé sur points/buts ATTENDUS (issus du modèle), pas une "
@@ -24,9 +25,10 @@ def project_group_table(group: str) -> list[dict]:
 
     for fx in data.group_fixtures(group):
         home, away = fx["home"], fx["away"]
-        rh, ra = data.rating_of(home), data.rating_of(away)
-        p = elo.match_probabilities(rh, ra)
-        lh, la = elo.expected_goals(rh, ra)
+        rh, ra = reff.effective_rating(home), reff.effective_rating(away)
+        advantage = reff.effective_advantage(home, away)
+        p = elo.match_probabilities(rh, ra, advantage=advantage)
+        lh, la = elo.expected_goals(rh, ra, advantage=advantage)
 
         stats[home]["exp_points"] += 3 * p["win"] + p["draw"]
         stats[away]["exp_points"] += 3 * p["loss"] + p["draw"]

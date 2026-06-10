@@ -33,6 +33,19 @@ class APIFootballError(Exception):
     pass
 
 
+def simplify_fixture(fx: dict) -> dict:
+    """Reduce a raw API-Football fixture object to the fields callers need."""
+    fixture, teams, goals = fx["fixture"], fx["teams"], fx["goals"]
+    return {
+        "date": fixture["date"],
+        "status": fixture["status"]["long"],
+        "venue": (fixture.get("venue") or {}).get("name"),
+        "home": teams["home"]["name"],
+        "away": teams["away"]["name"],
+        "score": f"{goals['home']}-{goals['away']}" if goals["home"] is not None else None,
+    }
+
+
 def _headers() -> dict:
     key = os.environ.get("API_FOOTBALL_KEY")
     if not key:

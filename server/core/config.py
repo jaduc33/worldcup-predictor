@@ -30,6 +30,24 @@ MAX_GOALS = _int("MAX_GOALS", 6)                       # scoreline grid bound (0
 # --- Knockout model ------------------------------------------------------------
 PENALTY_SKILL_WEIGHT = _float("PENALTY_SKILL_WEIGHT", 0.2)  # skill influence on penalty shootouts
 
+# --- Recency-weighted form ----------------------------------------------------
+FORM_WINDOW = _int("FORM_WINDOW", 4)                       # number of recent matches considered
+FORM_WEIGHT = _float("FORM_WEIGHT", 8.0)                   # Elo points per unit of avg form score
+FORM_MAX_ADJUSTMENT = _float("FORM_MAX_ADJUSTMENT", 40.0)  # cap on |form adjustment|, Elo points
+
+# --- Host-nation advantage -------------------------------------------------------
+HOST_ADV = _float("HOST_ADV", 60.0)  # Elo bump for USA/Canada/Mexico playing on home soil
+                                      # (replaces manual rating edits; classic home-advantage size)
+
+# --- Head-to-head blending ---------------------------------------------------------
+H2H_WEIGHT = _float("H2H_WEIGHT", 0.15)        # blend share given to H2H-derived 1X2
+H2H_MIN_MATCHES = _int("H2H_MIN_MATCHES", 3)   # minimum H2H meetings to apply any blend
+H2H_MAX_MATCHES = _int("H2H_MAX_MATCHES", 10)  # cap on meetings considered
+H2H_DECAY = _float("H2H_DECAY", 0.85)          # recency decay per meeting (most-recent-first)
+
+# --- Monte Carlo group simulation ----------------------------------------------------
+MONTE_CARLO_ITERATIONS = _int("MONTE_CARLO_ITERATIONS", 2000)  # 12 groups x 6 matches x N
+
 # --- MCP server endpoint --------------------------------------------------------
 MCP_HOST = os.environ.get("MCP_HOST", "127.0.0.1")
 MCP_PORT = _int("MCP_PORT", 8000)

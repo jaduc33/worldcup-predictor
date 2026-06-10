@@ -52,21 +52,35 @@ ASSIGNMENT_NOTE = (
 def assign_third_placed(qualified_thirds: list[dict]) -> dict[str, dict]:
     """Assign the 8 qualified third-placed teams to the 8 '3:Mx' slots.
 
-    Greedy most-constrained-slot-first: at each step, fill the slot with the
-    fewest remaining eligible candidates, choosing its best-ranked candidate.
+    Backtracking search over THIRD_PLACE_SLOTS: for each slot (in fixed order),
+    try its remaining eligible candidates best-ranked first, backtracking
+    whenever a choice leaves a later slot with no eligible team. With 8 slots
+    and at most 8 candidates this is exhaustive but cheap, and -- unlike a
+    single greedy pass -- always finds a valid assignment if one exists.
     """
-    remaining = {r["group"]: r for r in qualified_thirds}
-    slots = dict(THIRD_PLACE_SLOTS)
-    assignment = {}
-    while slots:
-        slot, eligible = min(slots.items(), key=lambda kv: len(kv[1] & remaining.keys()))
-        candidates = [g for g in eligible if g in remaining]
-        if not candidates:
-            raise ValueError(f"No eligible third-placed team left for slot {slot}")
-        best = min(candidates, key=lambda g: remaining[g]["third_place_rank"])
-        assignment[slot] = remaining.pop(best)
-        del slots[slot]
-    return assignment
+    by_group = {r["group"]: r for r in qualified_thirds}
+    slot_names = list(THIRD_PLACE_SLOTS)
+
+    def backtrack(i: int, remaining: set[str], assignment: dict[str, dict]) -> dict[str, dict] | None:
+        if i == len(slot_names):
+            return assignment
+        slot = slot_names[i]
+        candidates = sorted(
+            (g for g in THIRD_PLACE_SLOTS[slot] if g in remaining),
+            key=lambda g: by_group[g]["third_place_rank"],
+        )
+        for g in candidates:
+            assignment[slot] = by_group[g]
+            result = backtrack(i + 1, remaining - {g}, assignment)
+            if result is not None:
+                return result
+            del assignment[slot]
+        return None
+
+    result = backtrack(0, set(by_group), {})
+    if result is None:
+        raise ValueError("No valid assignment of third-placed teams to bracket slots")
+    return result
 
 
 def _resolve_spec(spec: str, groups: dict[str, list[dict]], third_assignment: dict[str, dict]) -> str:

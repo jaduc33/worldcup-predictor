@@ -10,7 +10,8 @@ import json
 import math
 from pathlib import Path
 
-from server.core import data, elo
+from server.core import elo
+from server.core import ratings_effective as reff
 
 STORE = Path(__file__).resolve().parents[2] / "data" / "predictions.json"
 OUTCOMES = ("home_win", "draw", "away_win")
@@ -39,13 +40,15 @@ def register(mcp):
     def record_prediction(home: str, away: str) -> dict:
         """Compute a prediction (1X2 + exact score) and store it for later evaluation."""
         try:
-            rating_home, rating_away = data.rating_of(home), data.rating_of(away)
+            rating_home = reff.effective_rating(home)
+            rating_away = reff.effective_rating(away)
         except KeyError as exc:
             return {"error": str(exc)}
-        p = elo.match_probabilities(rating_home, rating_away)
+        advantage = reff.effective_advantage(home, away)
+        p = elo.match_probabilities(rating_home, rating_away, advantage=advantage)
         probs = {"home_win": p["win"], "draw": p["draw"], "away_win": p["loss"]}
-        lambda_home, lambda_away = elo.expected_goals(rating_home, rating_away)
-        exact_score = elo.most_likely_scores(lambda_home, lambda_away, top_n=1)[0]["score"]
+        lambda_home, lambda_away = elo.expected_goals(rating_home, rating_away, advantage=advantage)
+        exact_score = elo.expected_score(lambda_home, lambda_away)
         records = _load()
         records.append({
             "home": home, "away": away, "probs": probs,

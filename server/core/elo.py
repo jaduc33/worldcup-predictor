@@ -101,6 +101,18 @@ def most_likely_scores(lambda_a: float, lambda_b: float, top_n: int = 3, max_goa
     return [{"score": f"{i}-{j}", "probability": round(p / total, 3)} for (i, j), p in ranked]
 
 
+def expected_score(lambda_a: float, lambda_b: float, max_goals: int = MAX_GOALS) -> str:
+    """Return each side's expected goals rounded to the nearest integer, e.g. "2-1".
+
+    Unlike most_likely_scores' top entry (the joint mode of two independent
+    Poisson distributions, which collapses to N-0/0-N/1-1 once the sides
+    diverge), this rounds each mean independently and so can land on
+    scorelines like 2-1 or 3-2 for moderately one-sided matchups. Clamped to
+    max_goals to stay within the same grid most_likely_scores uses.
+    """
+    return f"{min(round(lambda_a), max_goals)}-{min(round(lambda_b), max_goals)}"
+
+
 def advance_probability(rating_a: float, rating_b: float, advantage: float = 0.0) -> float:
     """P(team A advances) in a single-elimination match: regulation result, draws go to penalties.
 

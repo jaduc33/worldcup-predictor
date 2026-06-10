@@ -52,6 +52,13 @@ def register(mcp):
             else "away_win"
         )
 
+        data.append_match_history({
+            "home": home, "away": away,
+            "score_home": score_home, "score_away": score_away,
+            "rating_home_pre": r_home, "rating_away_pre": r_away,
+            "outcome": outcome,
+        })
+
         # Settle the most recent open prediction for this match, if any
         records = _load_predictions()
         settled = False
