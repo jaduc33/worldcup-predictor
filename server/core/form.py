@@ -5,10 +5,21 @@ never persisted into elo_ratings.json (that's elo.update_ratings' job).
 Degrades to 0.0 (no adjustment) until enough match_history.json entries exist,
 which is the case for the whole tournament until update_match_result() has
 been called at least twice for a given team.
+
+Each match_history.json entry may carry a "competition" field (the
+API-Football league name, e.g. "Friendlies" or "World Cup"). Friendlies count
+less toward form than competitive matches -- different stakes and lineups make
+them less representative of a team's "real" current level.
 """
 
 from server.core import elo
-from server.core.config import FORM_MAX_ADJUSTMENT, FORM_WEIGHT, FORM_WINDOW
+from server.core.config import FORM_MAX_ADJUSTMENT, FORM_WEIGHT, FORM_WINDOW, FRIENDLY_FORM_WEIGHT
+
+_FRIENDLY_COMPETITIONS = {"Friendlies"}
+
+
+def _match_weight(entry: dict) -> float:
+    return FRIENDLY_FORM_WEIGHT if entry.get("competition") in _FRIENDLY_COMPETITIONS else 1.0
 
 
 def _match_form_score(entry: dict, team: str) -> float:
@@ -45,6 +56,7 @@ def team_form_adjustment(team: str, history: list[dict] | None = None) -> float:
         return 0.0
 
     recent = team_matches[-FORM_WINDOW:]
-    raw = sum(_match_form_score(e, team) for e in recent) / len(recent)
+    weights = [_match_weight(e) for e in recent]
+    raw = sum(w * _match_form_score(e, team) for w, e in zip(weights, recent)) / sum(weights)
     adjustment = raw * FORM_WEIGHT
     return max(-FORM_MAX_ADJUSTMENT, min(FORM_MAX_ADJUSTMENT, adjustment))

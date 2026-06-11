@@ -1,1 +1,57 @@
-[]
+[
+  {
+    "home": "Argentina",
+    "away": "Iceland",
+    "score_home": 3,
+    "score_away": 0,
+    "rating_home_pre": 2115.0,
+    "rating_away_pre": 1568.0,
+    "outcome": "home_win",
+    "competition": "Friendlies",
+    "fixture_id": 1540357
+  },
+  {
+    "home": "Iraq",
+    "away": "Venezuela",
+    "score_home": 0,
+    "score_away": 2,
+    "rating_home_pre": 1607.0,
+    "rating_away_pre": 1733.0,
+    "outcome": "away_win",
+    "competition": "Friendlies",
+    "fixture_id": 1546509
+  },
+  {
+    "home": "Portugal",
+    "away": "Nigeria",
+    "score_home": 2,
+    "score_away": 1,
+    "rating_home_pre": 1989.0,
+    "rating_away_pre": 1767.0,
+    "outcome": "home_win",
+    "competition": "Friendlies",
+    "fixture_id": 1540358
+  },
+  {
+    "home": "England",
+    "away": "Costa Rica",
+    "score_home": 3,
+    "score_away": 0,
+    "rating_home_pre": 2024.0,
+    "rating_away_pre": 1608.0,
+    "outcome": "home_win",
+    "competition": "Friendlies",
+    "fixture_id": 1525494
+  },
+  {
+    "home": "Bolivia",
+    "away": "Algeria",
+    "score_home": 0,
+    "score_away": 4,
+    "rating_home_pre": 1621.0,
+    "rating_away_pre": 1772.0,
+    "outcome": "away_win",
+    "competition": "Friendlies",
+    "fixture_id": 1548458
+  }
+]

@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from server.core import data, elo, fetch
+from server.core import data, elo, fetch, seed_history
 
 _PREDICTIONS_FILE = Path(__file__).resolve().parents[2] / "data" / "predictions.json"
 _OUTCOMES = ("home_win", "draw", "away_win")
@@ -57,6 +57,7 @@ def register(mcp):
             "score_home": score_home, "score_away": score_away,
             "rating_home_pre": r_home, "rating_away_pre": r_away,
             "outcome": outcome,
+            "competition": "World Cup",
         })
 
         # Settle the most recent open prediction for this match, if any
@@ -80,6 +81,22 @@ def register(mcp):
             },
             "prediction_settled": settled,
         }
+
+    @mcp.tool
+    def seed_recent_friendlies() -> dict:
+        """Backfill match_history.json with recently-finished friendlies involving World Cup teams.
+
+        Scans the ~3-day API-Football date window around today (the only
+        window the free plan allows) for finished matches involving a World
+        Cup team, and records each one (with its competition, for
+        form.py's competition-weighted average) using eloratings.net for
+        pre-match ratings. Safe to call repeatedly: already-recorded
+        fixtures are skipped.
+        """
+        try:
+            return seed_history.seed_recent_friendlies()
+        except Exception as exc:
+            return {"error": str(exc)}
 
     @mcp.tool
     def get_tournament_status() -> dict:

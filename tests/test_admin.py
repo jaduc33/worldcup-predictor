@@ -49,6 +49,7 @@ def test_update_match_result_appends_match_history(mcp_app):
     assert entry["score_home"] == 2
     assert entry["score_away"] == 1
     assert entry["outcome"] == "home_win"
+    assert entry["competition"] == "World Cup"
     assert "rating_home_pre" in entry and "rating_away_pre" in entry
 
 
@@ -58,3 +59,18 @@ def test_update_match_result_updates_elo_ratings(mcp_app):
               {"home": "France", "away": "Brazil", "score_home": 2, "score_away": 1})
     after = data.rating_of("France")
     assert after > before
+
+
+def test_seed_recent_friendlies_delegates_to_seed_history(mcp_app, monkeypatch):
+    monkeypatch.setattr(admin.seed_history, "seed_recent_friendlies", lambda: {"added": 2, "matches": []})
+    result = call_tool(mcp_app, "seed_recent_friendlies", {})
+    assert result == {"added": 2, "matches": []}
+
+
+def test_seed_recent_friendlies_returns_error_on_exception(mcp_app, monkeypatch):
+    def _raise():
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(admin.seed_history, "seed_recent_friendlies", _raise)
+    result = call_tool(mcp_app, "seed_recent_friendlies", {})
+    assert "error" in result

@@ -34,6 +34,8 @@ PENALTY_SKILL_WEIGHT = _float("PENALTY_SKILL_WEIGHT", 0.2)  # skill influence on
 FORM_WINDOW = _int("FORM_WINDOW", 4)                       # number of recent matches considered
 FORM_WEIGHT = _float("FORM_WEIGHT", 8.0)                   # Elo points per unit of avg form score
 FORM_MAX_ADJUSTMENT = _float("FORM_MAX_ADJUSTMENT", 40.0)  # cap on |form adjustment|, Elo points
+FRIENDLY_FORM_WEIGHT = _float("FRIENDLY_FORM_WEIGHT", 0.4)  # weight of a "Friendlies" result vs
+                                                             # 1.0 for competitive matches (World Cup, etc.)
 
 # --- Host-nation advantage -------------------------------------------------------
 HOST_ADV = _float("HOST_ADV", 60.0)  # Elo bump for USA/Canada/Mexico playing on home soil
