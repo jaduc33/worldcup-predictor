@@ -20,7 +20,7 @@ server/
     h2h.py               # mélange des probas 1N2 avec l'historique des confrontations
     standings.py         # projection des classements de poule (valeurs attendues)
     simulation.py        # simulation Monte Carlo des poules (probas de qualif réelles)
-    bracket.py           # résolution du tableau des 16es de finale
+    bracket.py           # tableau officiel FIFA complet (8es -> finale, M73-M104)
     football_api.py      # client API-Football (calendrier, scores live, H2H, blessures)
     cache.py             # cache JSON avec TTL pour API-Football
     fetch.py             # ratings live depuis eloratings.net
@@ -124,7 +124,9 @@ matchs au fil du tournoi.
 1. Calibrer `DRAW_BASE`, `HOST_ADV`, `FORM_WEIGHT` et `H2H_WEIGHT` sur les
    premiers résultats réels via `get_accuracy`.
 2. Ajouter la couche agent (client MCP + Claude) qui orchestre + explique.
-3. Tableau officiel complet d'attribution des meilleurs 3es de poule (la
-   recherche par backtracking de `bracket.assign_third_placed` trouve une
-   affectation valide mais pas forcément celle de la table FIFA, voir
-   `bracket.ASSIGNMENT_NOTE`).
+3. Le tableau officiel FIFA (8es de finale -> finale, M73-M104) est désormais
+   modélisé en intégralité dans `bracket.py` -- la seule simplification
+   restante est l'**attribution des meilleurs 3es de poule** aux 8 emplacements
+   `3:Mx` des 16es : la recherche par backtracking de
+   `bracket.assign_third_placed` trouve une affectation valide mais pas
+   forcément celle de la table officielle FIFA (voir `bracket.ASSIGNMENT_NOTE`).

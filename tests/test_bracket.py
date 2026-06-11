@@ -41,3 +41,38 @@ def test_resolve_fixtures_produces_16_matches_with_32_unique_teams():
     assert len(teams) == 32
     for fx in fixtures:
         assert fx["home"] != fx["away"]
+
+
+def test_resolve_round_looks_up_home_and_away_from_previous_results():
+    schedule = [{"match": 100, "home": 1, "away": 2}, {"match": 101, "home": 3, "away": 4}]
+    prev_results = {1: "France", 2: "Brazil", 3: "Spain", 4: "Argentina"}
+
+    resolved = bracket.resolve_round(schedule, prev_results)
+
+    assert resolved == [
+        (schedule[0], "France", "Brazil"),
+        (schedule[1], "Spain", "Argentina"),
+    ]
+
+
+def test_round_of_16_references_each_round_of_32_match_exactly_once():
+    refs = [fx["home"] for fx in bracket.ROUND_OF_16] + [fx["away"] for fx in bracket.ROUND_OF_16]
+    assert sorted(refs) == list(range(1, 17))
+
+
+def test_quarterfinals_reference_each_round_of_16_match_exactly_once():
+    refs = [fx["home"] for fx in bracket.QUARTERFINALS] + [fx["away"] for fx in bracket.QUARTERFINALS]
+    r16_matches = [fx["match"] for fx in bracket.ROUND_OF_16]
+    assert sorted(refs) == sorted(r16_matches)
+
+
+def test_semifinals_reference_each_quarterfinal_match_exactly_once():
+    refs = [fx["home"] for fx in bracket.SEMIFINALS] + [fx["away"] for fx in bracket.SEMIFINALS]
+    qf_matches = [fx["match"] for fx in bracket.QUARTERFINALS]
+    assert sorted(refs) == sorted(qf_matches)
+
+
+def test_final_and_third_place_reference_both_semifinal_matches():
+    sf_matches = {fx["match"] for fx in bracket.SEMIFINALS}
+    assert {bracket.FINAL["home"], bracket.FINAL["away"]} == sf_matches
+    assert {bracket.THIRD_PLACE["home"], bracket.THIRD_PLACE["away"]} == sf_matches

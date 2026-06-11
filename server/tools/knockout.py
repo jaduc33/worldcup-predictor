@@ -68,20 +68,26 @@ def _simulate_round_of_32() -> dict:
     }
 
 
-def _play_round(teams: list[str], round_name: str) -> tuple[list[dict], list[str]]:
-    """Pair up consecutive teams and predict each match. Returns (matches, winners)."""
-    matches, winners = [], []
-    for i in range(0, len(teams), 2):
-        team_a, team_b = teams[i], teams[i + 1]
+def _play_bracket_round(schedule: list[dict], prev_results: dict[int, str],
+                         round_name: str) -> tuple[list[dict], dict[int, str], dict[int, str]]:
+    """Predict every match in `schedule`, resolving "home"/"away" against
+    `prev_results` (see bracket.resolve_round). Returns (matches, winners,
+    losers), the latter two keyed by each match's "match" number for the next
+    round to look up.
+    """
+    matches, winners, losers = [], {}, {}
+    for fx, team_a, team_b in bracket.resolve_round(schedule, prev_results):
         prediction = _predict_knockout(team_a, team_b)
         winner = prediction["favorite_to_advance"]
         loser = team_b if winner == team_a else team_a
         matches.append({
-            "round": round_name, "team_a": team_a, "team_b": team_b,
+            "match": fx["match"], "date": fx["date"], "round": round_name,
+            "home": team_a, "away": team_b,
             "prediction": prediction, "winner": winner, "loser": loser,
         })
-        winners.append(winner)
-    return matches, winners
+        winners[fx["match"]] = winner
+        losers[fx["match"]] = loser
+    return matches, winners, losers
 
 
 def register(mcp):
@@ -162,28 +168,28 @@ def register(mcp):
     def simulate_tournament() -> dict:
         """Chain predictions from the round of 32 through to the final and 3rd-place match.
 
-        The round of 32 uses the official bracket (group positions, see
-        simulate_round_of_32). From the round of 16 onward, this uses a
-        SIMPLIFIED SEQUENTIAL pairing (winners of consecutive round-of-32
-        matches meet, then winners of consecutive round-of-16 matches, etc.)
-        -- NOT the official FIFA bracket, which can only be resolved once the
-        round-of-32 results are known.
+        Every round follows the official FIFA bracket (server/core/bracket.py):
+        the round of 32 uses the official group-position formulas (see
+        simulate_round_of_32), and the round of 16 onward uses the official
+        fixed pairing of which match-winners meet (e.g. round-of-16 match 89
+        is always between the winners of round-of-32 matches 3 and 6).
         """
         r32 = _simulate_round_of_32()
-        r32_winners = r32["qualified_round_of_16"]
+        r32_winners = {m["match"]: m["prediction"]["favorite_to_advance"] for m in r32["matches"]}
 
-        r16_matches, r16_winners = _play_round(r32_winners, "round_of_16")
-        qf_matches, qf_winners = _play_round(r16_winners, "quarterfinals")
-        sf_matches, sf_winners = _play_round(qf_winners, "semifinals")
+        r16_matches, r16_winners, _ = _play_bracket_round(bracket.ROUND_OF_16, r32_winners, "round_of_16")
+        qf_matches, qf_winners, _ = _play_bracket_round(bracket.QUARTERFINALS, r16_winners, "quarterfinals")
+        sf_matches, sf_winners, sf_losers = _play_bracket_round(bracket.SEMIFINALS, qf_winners, "semifinals")
 
-        final_pred = _predict_knockout(sf_winners[0], sf_winners[1])
+        _, final_a, final_b = bracket.resolve_round([bracket.FINAL], sf_winners)[0]
+        final_pred = _predict_knockout(final_a, final_b)
         champion = final_pred["favorite_to_advance"]
-        runner_up = sf_winners[1] if champion == sf_winners[0] else sf_winners[0]
+        runner_up = final_b if champion == final_a else final_a
 
-        sf_losers = [m["loser"] for m in sf_matches]
-        third_pred = _predict_knockout(sf_losers[0], sf_losers[1])
+        _, third_a, third_b = bracket.resolve_round([bracket.THIRD_PLACE], sf_losers)[0]
+        third_pred = _predict_knockout(third_a, third_b)
         third_place = third_pred["favorite_to_advance"]
-        fourth_place = sf_losers[1] if third_place == sf_losers[0] else sf_losers[0]
+        fourth_place = third_b if third_place == third_a else third_a
 
         return {
             "round_of_32": r32["matches"],
@@ -191,21 +197,21 @@ def register(mcp):
             "quarterfinals": qf_matches,
             "semifinals": sf_matches,
             "third_place_match": {
-                "team_a": sf_losers[0], "team_b": sf_losers[1],
+                "match": bracket.THIRD_PLACE["match"], "date": bracket.THIRD_PLACE["date"],
+                "home": third_a, "away": third_b,
                 "prediction": third_pred, "winner": third_place,
             },
             "final": {
-                "team_a": sf_winners[0], "team_b": sf_winners[1],
+                "match": bracket.FINAL["match"], "date": bracket.FINAL["date"],
+                "home": final_a, "away": final_b,
                 "prediction": final_pred, "winner": champion,
             },
             "champion": champion,
             "runner_up": runner_up,
             "third_place": third_place,
             "fourth_place": fourth_place,
-            "note": r32["note"] + " A partir des 8emes de finale, les confrontations suivent une "
-                    "convention d'appariement SEQUENTIELLE simplifiee (vainqueurs de matchs "
-                    "consecutifs s'affrontent) -- PAS le bracket officiel FIFA, qui depend des "
-                    "resultats reels des 16es de finale.",
+            "note": r32["note"] + " A partir des 8emes de finale, les confrontations suivent "
+                    "le bracket officiel FIFA (server/core/bracket.py).",
         }
 
     @mcp.tool
@@ -215,11 +221,8 @@ def register(mcp):
         each stage: P(qualify), P(round of 16), P(quarterfinals),
         P(semifinals), P(final), P(champion), P(third-place match).
 
-        The round of 32 uses the official bracket (resolved per iteration
-        from the simulated group results); from the round of 16 onward, this
-        uses the same SIMPLIFIED SEQUENTIAL pairing as simulate_tournament
-        (winners of consecutive matches meet) -- not the official FIFA
-        bracket, which depends on the actual round-of-32 results.
+        Every round follows the official FIFA bracket (server/core/bracket.py),
+        resolved per iteration from the simulated group/round-of-32 results.
         """
         n = iterations or MONTE_CARLO_ITERATIONS
         result = simulation.run_tournament_simulation(iterations=n)
@@ -229,8 +232,6 @@ def register(mcp):
             "note": "Egalite totale (points, diff. de buts, buts marques) departagee "
                     "aleatoirement a chaque iteration -- fair-play et tirage au sort "
                     "non modelises. " + standings.TIEBREAK_NOTE + " A partir des 8emes de "
-                    "finale, les confrontations suivent une convention d'appariement "
-                    "SEQUENTIELLE simplifiee (vainqueurs de matchs consecutifs s'affrontent) "
-                    "-- PAS le bracket officiel FIFA, qui depend des resultats reels des "
-                    "16es de finale.",
+                    "finale, les confrontations suivent le bracket officiel FIFA "
+                    "(server/core/bracket.py).",
         }

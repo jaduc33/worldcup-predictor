@@ -3,8 +3,9 @@
 import pytest
 from fastmcp import FastMCP
 
+from server.core import bracket
 from server.tools import knockout
-from server.tools.knockout import _play_round, _predict_knockout, _simulate_round_of_32
+from server.tools.knockout import _predict_knockout, _simulate_round_of_32
 from tests._helpers import call_tool
 
 
@@ -24,21 +25,6 @@ def test_predict_knockout_stronger_team_more_likely_to_advance():
     result = _predict_knockout("Spain", "Curacao")
     assert result["advance_probability"]["Spain"] > 0.5
     assert result["favorite_to_advance"] == "Spain"
-
-
-def test_play_round_pairs_consecutive_teams():
-    teams = ["France", "Brazil", "Spain", "Argentina"]
-    matches, winners = _play_round(teams, "round_of_16")
-
-    assert len(matches) == 2
-    assert len(winners) == 2
-    assert {matches[0]["team_a"], matches[0]["team_b"]} == {"France", "Brazil"}
-    assert {matches[1]["team_a"], matches[1]["team_b"]} == {"Spain", "Argentina"}
-    for m, w in zip(matches, winners):
-        assert m["winner"] == w
-        assert w in (m["team_a"], m["team_b"])
-        assert m["loser"] in (m["team_a"], m["team_b"])
-        assert m["loser"] != w
 
 
 def test_simulate_round_of_32_produces_16_matches_and_winners():
@@ -67,6 +53,36 @@ def test_simulate_tournament_produces_a_full_bracket(mcp_app):
 
     podium = {result["champion"], result["runner_up"], result["third_place"], result["fourth_place"]}
     assert len(podium) == 4
+
+
+def test_simulate_tournament_follows_official_bracket_pairings(mcp_app):
+    """Each round's matches must follow the fixed FIFA pairing in bracket.py,
+    not an arbitrary/sequential order."""
+    result = call_tool(mcp_app, "simulate_tournament")
+
+    r32_winners = {m["match"]: m["prediction"]["favorite_to_advance"] for m in result["round_of_32"]}
+    for fx, expected_a, expected_b in bracket.resolve_round(bracket.ROUND_OF_16, r32_winners):
+        m = next(x for x in result["round_of_16"] if x["match"] == fx["match"])
+        assert {m["home"], m["away"]} == {expected_a, expected_b}
+
+    r16_winners = {m["match"]: m["winner"] for m in result["round_of_16"]}
+    for fx, expected_a, expected_b in bracket.resolve_round(bracket.QUARTERFINALS, r16_winners):
+        m = next(x for x in result["quarterfinals"] if x["match"] == fx["match"])
+        assert {m["home"], m["away"]} == {expected_a, expected_b}
+
+    qf_winners = {m["match"]: m["winner"] for m in result["quarterfinals"]}
+    for fx, expected_a, expected_b in bracket.resolve_round(bracket.SEMIFINALS, qf_winners):
+        m = next(x for x in result["semifinals"] if x["match"] == fx["match"])
+        assert {m["home"], m["away"]} == {expected_a, expected_b}
+
+    sf_winners = {m["match"]: m["winner"] for m in result["semifinals"]}
+    sf_losers = {m["match"]: m["loser"] for m in result["semifinals"]}
+
+    _, final_a, final_b = bracket.resolve_round([bracket.FINAL], sf_winners)[0]
+    assert {result["final"]["home"], result["final"]["away"]} == {final_a, final_b}
+
+    _, third_a, third_b = bracket.resolve_round([bracket.THIRD_PLACE], sf_losers)[0]
+    assert {result["third_place_match"]["home"], result["third_place_match"]["away"]} == {third_a, third_b}
 
 
 def test_simulate_tournament_monte_carlo_returns_per_team_probabilities(mcp_app):

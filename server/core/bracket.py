@@ -1,13 +1,18 @@
-"""Round of 32 bracket structure for the 2026 World Cup (16 matches, 73-88).
+"""Knockout bracket structure for the 2026 World Cup (matches 73-104), per the
+official FIFA bracket.
 
-Source: official tournament schedule -- group-position formulas per match
-("1A" = Group A winner, "2B" = Group B runner-up, "3:M7" = the qualified
-third-placed team assigned to the slot whose eligible groups are listed
-under "M7" for match 7).
+Round of 32 (matches 73-88, "match" 1-16 below): group-position formulas per
+match ("1A" = Group A winner, "2B" = Group B runner-up, "3:M7" = the qualified
+third-placed team assigned to the slot whose eligible groups are listed under
+"M7" for match 7).
 
-Rounds beyond the round of 32 (which winners meet in the round of 16, etc.)
-are NOT modelled here: those pairings only become unambiguous once the
-round-of-32 results are known.
+Round of 16 onward (ROUND_OF_16, QUARTERFINALS, SEMIFINALS, FINAL,
+THIRD_PLACE): unlike the group-position formulas above, WHICH WINNERS MEET is
+fixed in advance by the official bracket and does not depend on the actual
+round-of-32 results -- only the team names filling each slot do. Each entry's
+"home"/"away" reference the "match" number of the corresponding fixture in the
+previous round (e.g. round-of-16 match 89 is between the winners of
+round-of-32 matches 3 and 6); resolve_round() looks those up.
 """
 
 ROUND_OF_32 = [
@@ -28,6 +33,48 @@ ROUND_OF_32 = [
     {"match": 15, "date": "2026-07-03", "venue": "Hard Rock Stadium, Miami", "home": "1J", "away": "2H"},
     {"match": 16, "date": "2026-07-03", "venue": "Arrowhead Stadium, Kansas City", "home": "1K", "away": "3:M16"},
 ]
+
+# Round of 16 (matches 89-96): "home"/"away" reference round-of-32 "match" numbers.
+ROUND_OF_16 = [
+    {"match": 89, "date": "2026-07-04", "home": 3, "away": 6},
+    {"match": 90, "date": "2026-07-04", "home": 1, "away": 4},
+    {"match": 91, "date": "2026-07-05", "home": 2, "away": 5},
+    {"match": 92, "date": "2026-07-06", "home": 7, "away": 8},
+    {"match": 93, "date": "2026-07-06", "home": 12, "away": 11},
+    {"match": 94, "date": "2026-07-07", "home": 10, "away": 9},
+    {"match": 95, "date": "2026-07-07", "home": 14, "away": 15},
+    {"match": 96, "date": "2026-07-07", "home": 13, "away": 16},
+]
+
+# Quarterfinals (matches 97-100): "home"/"away" reference round-of-16 "match" numbers.
+QUARTERFINALS = [
+    {"match": 97, "date": "2026-07-09", "home": 89, "away": 90},
+    {"match": 98, "date": "2026-07-10", "home": 93, "away": 94},
+    {"match": 99, "date": "2026-07-11", "home": 91, "away": 92},
+    {"match": 100, "date": "2026-07-12", "home": 95, "away": 96},
+]
+
+# Semifinals (matches 101-102): "home"/"away" reference quarterfinal "match" numbers.
+SEMIFINALS = [
+    {"match": 101, "date": "2026-07-14", "home": 97, "away": 98},
+    {"match": 102, "date": "2026-07-15", "home": 99, "away": 100},
+]
+
+# Final (match 104) and 3rd-place match (match 103): "home"/"away" reference
+# semifinal "match" numbers. The 3rd-place match is between the two losers.
+FINAL = {"match": 104, "date": "2026-07-19", "home": 101, "away": 102}
+THIRD_PLACE = {"match": 103, "date": "2026-07-18", "home": 101, "away": 102}
+
+
+def resolve_round(schedule: list[dict], prev_results: dict[int, str]) -> list[tuple[dict, str, str]]:
+    """For each entry in `schedule`, resolve its "home"/"away" match-number
+    references against `prev_results` (previous round's "match" number ->
+    team that emerged from it -- a winner, or for THIRD_PLACE, a loser).
+
+    Returns a list of (schedule_entry, team_a, team_b) tuples.
+    """
+    return [(fx, prev_results[fx["home"]], prev_results[fx["away"]]) for fx in schedule]
+
 
 # For each "3:Mx" slot, the groups whose 3rd-placed team is eligible to fill it.
 THIRD_PLACE_SLOTS = {

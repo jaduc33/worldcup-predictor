@@ -4,10 +4,9 @@ Each iteration simulates a group's 6 matches by sampling outcome + scoreline,
 builds the final table per the OFFICIAL tiebreak order (points, GD, GF -- ties
 beyond that broken randomly per iteration, since fair-play and the draw of
 lots aren't modelled), and tallies qualification rates. `run_tournament_simulation`
-extends this through the round of 32 (official bracket via bracket.py) and the
-remaining knockout rounds (simplified sequential pairing, see
-simulate_tournament's note), tallying each team's probability of reaching every
-stage up to champion.
+extends this through the entire knockout stage (official FIFA bracket via
+bracket.py, round of 32 through the final and 3rd-place match), tallying each
+team's probability of reaching every stage up to champion.
 
 Kept separate from standings.py's expected-value projection
 (project_group_table), which remains the default/cheap projection. Monte Carlo
@@ -178,22 +177,14 @@ def _knockout_winner(team_a: str, team_b: str) -> str:
     return team_a if random.random() < pen_a else team_b
 
 
-def _play_knockout_round(teams: list[str]) -> list[str]:
-    """Pair up consecutive teams and return the winners."""
-    return [_knockout_winner(teams[i], teams[i + 1]) for i in range(0, len(teams), 2)]
-
-
 def run_tournament_simulation(iterations: int = MONTE_CARLO_ITERATIONS, seed: int | None = None) -> dict:
     """Run `iterations` full-tournament simulations (groups through the final)
     and tally, per team, the probability of reaching each stage: P(qualify
     for the round of 32), P(round of 16), P(quarterfinals), P(semifinals),
     P(final), P(champion), and P(third-place match).
 
-    The round of 32 uses the official bracket (bracket.resolve_fixtures, group
-    positions resolved per iteration). From the round of 16 onward, winners of
-    consecutive round-of-32 matches meet -- the same SIMPLIFIED SEQUENTIAL
-    pairing as simulate_tournament, since the official FIFA bracket beyond the
-    round of 32 can only be resolved once those results are known.
+    Every round follows the official FIFA bracket (bracket.py), resolved per
+    iteration from the simulated group/round-of-32 results.
     """
     if seed is not None:
         random.seed(seed)
@@ -216,28 +207,34 @@ def run_tournament_simulation(iterations: int = MONTE_CARLO_ITERATIONS, seed: in
         groups_dict = {g: [{"team": t} for t in order] for g, order in group_orders.items()}
         fixtures = bracket.resolve_fixtures(groups_dict, qualified_thirds)
 
-        round_of_16 = [_knockout_winner(fx["home"], fx["away"]) for fx in fixtures]
-        for team in round_of_16:
-            counts[team]["round_of_16"] += 1
+        r32_winners = {}
+        for fx in fixtures:
+            winner = _knockout_winner(fx["home"], fx["away"])
+            r32_winners[fx["match"]] = winner
+            counts[winner]["round_of_16"] += 1
 
-        quarterfinalists = _play_knockout_round(round_of_16)
-        for team in quarterfinalists:
-            counts[team]["quarterfinals"] += 1
+        r16_winners = {}
+        for fx, team_a, team_b in bracket.resolve_round(bracket.ROUND_OF_16, r32_winners):
+            winner = _knockout_winner(team_a, team_b)
+            r16_winners[fx["match"]] = winner
+            counts[winner]["quarterfinals"] += 1
 
-        semifinalists = _play_knockout_round(quarterfinalists)
-        for team in semifinalists:
-            counts[team]["semifinals"] += 1
+        qf_winners = {}
+        for fx, team_a, team_b in bracket.resolve_round(bracket.QUARTERFINALS, r16_winners):
+            winner = _knockout_winner(team_a, team_b)
+            qf_winners[fx["match"]] = winner
+            counts[winner]["semifinals"] += 1
 
-        finalists = []
-        for i in range(0, len(semifinalists), 2):
-            team_a, team_b = semifinalists[i], semifinalists[i + 1]
+        sf_winners = {}
+        for fx, team_a, team_b in bracket.resolve_round(bracket.SEMIFINALS, qf_winners):
             winner = _knockout_winner(team_a, team_b)
             loser = team_b if winner == team_a else team_a
+            sf_winners[fx["match"]] = winner
             counts[winner]["final"] += 1
             counts[loser]["third_place_match"] += 1
-            finalists.append(winner)
 
-        champion = _knockout_winner(finalists[0], finalists[1])
+        _, final_a, final_b = bracket.resolve_round([bracket.FINAL], sf_winners)[0]
+        champion = _knockout_winner(final_a, final_b)
         counts[champion]["champion"] += 1
 
     results = {}
