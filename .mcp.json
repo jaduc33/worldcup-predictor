@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "worldcup-predictor": {
+      "command": "C:\\Users\\jaduc\\.local\\bin\\uv.exe",
+      "args": ["run", "fastmcp", "run", "server/app.py"]
+    }
+  }
+}
