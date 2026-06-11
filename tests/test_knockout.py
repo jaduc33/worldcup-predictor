@@ -67,3 +67,17 @@ def test_simulate_tournament_produces_a_full_bracket(mcp_app):
 
     podium = {result["champion"], result["runner_up"], result["third_place"], result["fourth_place"]}
     assert len(podium) == 4
+
+
+def test_simulate_tournament_monte_carlo_returns_per_team_probabilities(mcp_app):
+    result = call_tool(mcp_app, "simulate_tournament_monte_carlo", {"iterations": 50})
+
+    assert result["iterations"] == 50
+
+    teams = result["teams"]
+    assert len(teams) == 48
+
+    for team_result in teams.values():
+        for key in ("p_qualify", "p_round_of_16", "p_quarterfinals",
+                     "p_semifinals", "p_final", "p_champion", "p_third_place_match"):
+            assert 0.0 <= team_result[key] <= 1.0

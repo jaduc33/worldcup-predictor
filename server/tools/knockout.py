@@ -207,3 +207,30 @@ def register(mcp):
                     "consecutifs s'affrontent) -- PAS le bracket officiel FIFA, qui depend des "
                     "resultats reels des 16es de finale.",
         }
+
+    @mcp.tool
+    def simulate_tournament_monte_carlo(iterations: int | None = None) -> dict:
+        """Run a Monte Carlo simulation of the entire tournament -- group stage
+        through the final -- and return per-team probabilities of reaching
+        each stage: P(qualify), P(round of 16), P(quarterfinals),
+        P(semifinals), P(final), P(champion), P(third-place match).
+
+        The round of 32 uses the official bracket (resolved per iteration
+        from the simulated group results); from the round of 16 onward, this
+        uses the same SIMPLIFIED SEQUENTIAL pairing as simulate_tournament
+        (winners of consecutive matches meet) -- not the official FIFA
+        bracket, which depends on the actual round-of-32 results.
+        """
+        n = iterations or MONTE_CARLO_ITERATIONS
+        result = simulation.run_tournament_simulation(iterations=n)
+        return {
+            "iterations": result["iterations"],
+            "teams": result["teams"],
+            "note": "Egalite totale (points, diff. de buts, buts marques) departagee "
+                    "aleatoirement a chaque iteration -- fair-play et tirage au sort "
+                    "non modelises. " + standings.TIEBREAK_NOTE + " A partir des 8emes de "
+                    "finale, les confrontations suivent une convention d'appariement "
+                    "SEQUENTIELLE simplifiee (vainqueurs de matchs consecutifs s'affrontent) "
+                    "-- PAS le bracket officiel FIFA, qui depend des resultats reels des "
+                    "16es de finale.",
+        }

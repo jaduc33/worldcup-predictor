@@ -1,7 +1,13 @@
-"""Monte Carlo group-stage simulation: simulate each group's 6 matches N times
-(sampling outcome + scoreline), build the final table per the OFFICIAL tiebreak
-order (points, GD, GF -- ties beyond that broken randomly per iteration, since
-fair-play and the draw of lots aren't modelled), and tally qualification rates.
+"""Monte Carlo simulation: groups (and optionally the full knockout bracket).
+
+Each iteration simulates a group's 6 matches by sampling outcome + scoreline,
+builds the final table per the OFFICIAL tiebreak order (points, GD, GF -- ties
+beyond that broken randomly per iteration, since fair-play and the draw of
+lots aren't modelled), and tallies qualification rates. `run_tournament_simulation`
+extends this through the round of 32 (official bracket via bracket.py) and the
+remaining knockout rounds (simplified sequential pairing, see
+simulate_tournament's note), tallying each team's probability of reaching every
+stage up to champion.
 
 Kept separate from standings.py's expected-value projection
 (project_group_table), which remains the default/cheap projection. Monte Carlo
@@ -11,9 +17,9 @@ is additive and opt-in.
 import random
 from math import exp
 
-from server.core import data, elo
+from server.core import bracket, data, elo
 from server.core import ratings_effective as reff
-from server.core.config import MAX_GOALS, MONTE_CARLO_ITERATIONS
+from server.core.config import MAX_GOALS, MONTE_CARLO_ITERATIONS, PENALTY_SKILL_WEIGHT
 
 
 def _poisson_sample(lam: float) -> int:
@@ -88,17 +94,32 @@ def _simulate_group_once(fx_params: list[tuple]) -> tuple[list[str], dict[str, d
     return teams, table
 
 
-def _rank_thirds(thirds: list[tuple[str, dict]]) -> list[str]:
-    """thirds: list of (team, table_stats). Returns team names ranked
-    best-to-worst by (points, gd, gf), ties broken randomly.
+def _simulate_all_groups_once(
+    fixture_params: dict[str, list[tuple]],
+) -> tuple[dict[str, list[str]], list[dict]]:
+    """Simulate one playthrough of all 12 groups.
+
+    Returns (group_orders, ranked_thirds):
+    - group_orders: {group: [1st, 2nd, 3rd, 4th]} per group.
+    - ranked_thirds: the 12 third-placed teams ranked best-to-worst by
+      (points, GD, GF), ties broken randomly, as
+      [{"team", "group", "third_place_rank"}, ...].
     """
-    shuffled = list(thirds)
-    random.shuffle(shuffled)
-    shuffled.sort(
-        key=lambda x: (x[1]["points"], x[1]["gf"] - x[1]["ga"], x[1]["gf"]),
-        reverse=True,
-    )
-    return [team for team, _ in shuffled]
+    group_orders = {}
+    thirds = []
+    for g, fx_params in fixture_params.items():
+        order, table = _simulate_group_once(fx_params)
+        group_orders[g] = order
+        third_team = order[2]
+        thirds.append((third_team, g, table[third_team]))
+
+    random.shuffle(thirds)
+    thirds.sort(key=lambda x: (x[2]["points"], x[2]["gf"] - x[2]["ga"], x[2]["gf"]), reverse=True)
+    ranked_thirds = [
+        {"team": team, "group": g, "third_place_rank": rank}
+        for rank, (team, g, _) in enumerate(thirds, start=1)
+    ]
+    return group_orders, ranked_thirds
 
 
 def run_simulation(iterations: int = MONTE_CARLO_ITERATIONS, seed: int | None = None) -> dict:
@@ -109,22 +130,17 @@ def run_simulation(iterations: int = MONTE_CARLO_ITERATIONS, seed: int | None = 
     if seed is not None:
         random.seed(seed)
 
-    groups = data.load_groups()
     teams = data.all_teams()
     fixture_params = _precompute_fixture_params()
     counts = {t: {"rank1": 0, "rank2": 0, "rank3": 0, "rank4": 0, "best_third": 0} for t in teams}
 
     for _ in range(iterations):
-        thirds_this_iter = []
-        for g in groups:
-            order, table = _simulate_group_once(fixture_params[g])
+        group_orders, ranked_thirds = _simulate_all_groups_once(fixture_params)
+        for order in group_orders.values():
             for rank, team in enumerate(order, start=1):
                 counts[team][f"rank{rank}"] += 1
-            third_team = order[2]
-            thirds_this_iter.append((third_team, table[third_team]))
-
-        for team in _rank_thirds(thirds_this_iter)[:8]:
-            counts[team]["best_third"] += 1
+        for third in ranked_thirds[:8]:
+            counts[third["team"]]["best_third"] += 1
 
     results = {}
     for t in teams:
@@ -140,5 +156,102 @@ def run_simulation(iterations: int = MONTE_CARLO_ITERATIONS, seed: int | None = 
             "p_qualify_top2": round(qualify_top2 / iterations, 4),
             "p_qualify_best_third": round(c["best_third"] / iterations, 4),
             "p_qualify": round((qualify_top2 + c["best_third"]) / iterations, 4),
+        }
+    return {"iterations": iterations, "teams": results}
+
+
+def _knockout_winner(team_a: str, team_b: str) -> str:
+    """Sample the winner of a single-elimination match: regulation result via
+    Poisson scoreline; a draw goes to a penalty shootout, resolved with the
+    same skill edge as elo.advance_probability (PENALTY_SKILL_WEIGHT).
+    """
+    rating_a = reff.effective_rating(team_a)
+    rating_b = reff.effective_rating(team_b)
+    advantage = reff.effective_advantage(team_a, team_b)
+
+    score_a, score_b = _sample_score(rating_a, rating_b, advantage)
+    if score_a != score_b:
+        return team_a if score_a > score_b else team_b
+
+    we = elo.win_expectancy(rating_a, rating_b, advantage)
+    pen_a = 0.5 + (we - 0.5) * PENALTY_SKILL_WEIGHT
+    return team_a if random.random() < pen_a else team_b
+
+
+def _play_knockout_round(teams: list[str]) -> list[str]:
+    """Pair up consecutive teams and return the winners."""
+    return [_knockout_winner(teams[i], teams[i + 1]) for i in range(0, len(teams), 2)]
+
+
+def run_tournament_simulation(iterations: int = MONTE_CARLO_ITERATIONS, seed: int | None = None) -> dict:
+    """Run `iterations` full-tournament simulations (groups through the final)
+    and tally, per team, the probability of reaching each stage: P(qualify
+    for the round of 32), P(round of 16), P(quarterfinals), P(semifinals),
+    P(final), P(champion), and P(third-place match).
+
+    The round of 32 uses the official bracket (bracket.resolve_fixtures, group
+    positions resolved per iteration). From the round of 16 onward, winners of
+    consecutive round-of-32 matches meet -- the same SIMPLIFIED SEQUENTIAL
+    pairing as simulate_tournament, since the official FIFA bracket beyond the
+    round of 32 can only be resolved once those results are known.
+    """
+    if seed is not None:
+        random.seed(seed)
+
+    teams = data.all_teams()
+    fixture_params = _precompute_fixture_params()
+    stages = ("rank1", "rank2", "best_third", "round_of_16", "quarterfinals",
+              "semifinals", "final", "champion", "third_place_match")
+    counts = {t: {s: 0 for s in stages} for t in teams}
+
+    for _ in range(iterations):
+        group_orders, ranked_thirds = _simulate_all_groups_once(fixture_params)
+        for order in group_orders.values():
+            for rank, team in enumerate(order[:2], start=1):
+                counts[team][f"rank{rank}"] += 1
+        qualified_thirds = ranked_thirds[:8]
+        for third in qualified_thirds:
+            counts[third["team"]]["best_third"] += 1
+
+        groups_dict = {g: [{"team": t} for t in order] for g, order in group_orders.items()}
+        fixtures = bracket.resolve_fixtures(groups_dict, qualified_thirds)
+
+        round_of_16 = [_knockout_winner(fx["home"], fx["away"]) for fx in fixtures]
+        for team in round_of_16:
+            counts[team]["round_of_16"] += 1
+
+        quarterfinalists = _play_knockout_round(round_of_16)
+        for team in quarterfinalists:
+            counts[team]["quarterfinals"] += 1
+
+        semifinalists = _play_knockout_round(quarterfinalists)
+        for team in semifinalists:
+            counts[team]["semifinals"] += 1
+
+        finalists = []
+        for i in range(0, len(semifinalists), 2):
+            team_a, team_b = semifinalists[i], semifinalists[i + 1]
+            winner = _knockout_winner(team_a, team_b)
+            loser = team_b if winner == team_a else team_a
+            counts[winner]["final"] += 1
+            counts[loser]["third_place_match"] += 1
+            finalists.append(winner)
+
+        champion = _knockout_winner(finalists[0], finalists[1])
+        counts[champion]["champion"] += 1
+
+    results = {}
+    for t in teams:
+        c = counts[t]
+        results[t] = {
+            "team": t,
+            "group": data.group_of(t),
+            "p_qualify": round((c["rank1"] + c["rank2"] + c["best_third"]) / iterations, 4),
+            "p_round_of_16": round(c["round_of_16"] / iterations, 4),
+            "p_quarterfinals": round(c["quarterfinals"] / iterations, 4),
+            "p_semifinals": round(c["semifinals"] / iterations, 4),
+            "p_final": round(c["final"] / iterations, 4),
+            "p_champion": round(c["champion"] / iterations, 4),
+            "p_third_place_match": round(c["third_place_match"] / iterations, 4),
         }
     return {"iterations": iterations, "teams": results}
