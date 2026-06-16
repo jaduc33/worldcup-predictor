@@ -39,7 +39,23 @@ def _match_form_score(entry: dict, team: str) -> float:
     goals_for, goals_against = elo.expected_goals(rating_for, rating_against)
     gd_term = (score_for - score_against) - (goals_for - goals_against)
 
-    return points_term + 0.3 * gd_term
+    score = points_term + 0.3 * gd_term
+
+    # Shots-on-target term: did the team create more/fewer chances than Elo predicts?
+    stats = entry.get("stats")
+    if stats:
+        side = "home" if is_home else "away"
+        opp = "away" if is_home else "home"
+        sot_for = (stats.get(side) or {}).get("shots_on_target")
+        sot_against = (stats.get(opp) or {}).get("shots_on_target")
+        if sot_for is not None and sot_against is not None:
+            total_sot = sot_for + sot_against
+            if total_sot > 0:
+                actual_ratio = sot_for / total_sot
+                expected_ratio = elo.win_expectancy(rating_for, rating_against)
+                score += 0.5 * (actual_ratio - expected_ratio)
+
+    return score
 
 
 def team_form_adjustment(team: str, history: list[dict] | None = None) -> float:

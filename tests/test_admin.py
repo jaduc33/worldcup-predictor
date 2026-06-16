@@ -74,3 +74,79 @@ def test_seed_recent_friendlies_returns_error_on_exception(mcp_app, monkeypatch)
     monkeypatch.setattr(admin.seed_history, "seed_recent_friendlies", _raise)
     result = call_tool(mcp_app, "seed_recent_friendlies", {})
     assert "error" in result
+
+
+def _fake_wc_fixture(home: str, away: str, score_home: int, score_away: int,
+                      fixture_id: int = 9000) -> dict:
+    """Minimal raw API-Football fixture dict for a finished World Cup match."""
+    return {
+        "fixture": {
+            "id": fixture_id,
+            "date": "2026-06-12T21:00:00+00:00",
+            "status": {"long": "Match Finished"},
+        },
+        "league": {"id": 1, "name": "FIFA World Cup"},
+        "teams": {
+            "home": {"name": home},
+            "away": {"name": away},
+        },
+        "goals": {"home": score_home, "away": score_away},
+    }
+
+
+def test_seed_world_cup_results_adds_match_and_updates_elo(mcp_app, monkeypatch):
+    from server.core import seed_history
+
+    france_before = data.rating_of("France")
+    brazil_before = data.rating_of("Brazil")
+
+    fixtures = [_fake_wc_fixture("France", "Brazil", 2, 1)]
+    monkeypatch.setattr(seed_history.api, "fixtures_on_date", lambda d: fixtures)
+    monkeypatch.setattr(seed_history, "_dates_since_wc_start", lambda: ["2026-06-12"])
+
+    result = call_tool(mcp_app, "seed_world_cup_results", {})
+
+    assert result["added"] == 1
+    assert result["matches"][0]["match"] == "France 2-1 Brazil"
+
+    history = data.load_match_history()
+    assert any(e["home"] == "France" and e["away"] == "Brazil" for e in history)
+
+    assert data.rating_of("France") > france_before
+    assert data.rating_of("Brazil") < brazil_before
+
+
+def test_seed_world_cup_results_skips_non_wc_matches(mcp_app, monkeypatch):
+    from server.core import seed_history
+
+    non_wc = _fake_wc_fixture("France", "Brazil", 1, 0)
+    non_wc["league"] = {"id": 999, "name": "Friendly"}
+
+    monkeypatch.setattr(seed_history.api, "fixtures_on_date", lambda d: [non_wc])
+    monkeypatch.setattr(seed_history, "_dates_since_wc_start", lambda: ["2026-06-12"])
+
+    result = call_tool(mcp_app, "seed_world_cup_results", {})
+    assert result["added"] == 0
+
+
+def test_seed_world_cup_results_skips_duplicate_fixture(mcp_app, monkeypatch):
+    from server.core import seed_history
+
+    fixtures = [_fake_wc_fixture("France", "Brazil", 2, 1, fixture_id=9001)]
+    monkeypatch.setattr(seed_history.api, "fixtures_on_date", lambda d: fixtures)
+    monkeypatch.setattr(seed_history, "_dates_since_wc_start", lambda: ["2026-06-12"])
+
+    result1 = call_tool(mcp_app, "seed_world_cup_results", {})
+    assert result1["added"] == 1
+
+    result2 = call_tool(mcp_app, "seed_world_cup_results", {})
+    assert result2["added"] == 0
+
+
+def test_seed_world_cup_results_returns_error_on_exception(mcp_app, monkeypatch):
+    def _raise():
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(admin.seed_history, "seed_world_cup_results", _raise)
+    result = call_tool(mcp_app, "seed_world_cup_results", {})
+    assert "error" in result

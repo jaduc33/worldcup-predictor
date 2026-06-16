@@ -99,6 +99,23 @@ def register(mcp):
             return {"error": str(exc)}
 
     @mcp.tool
+    def seed_world_cup_results() -> dict:
+        """Fetch all finished World Cup group-stage matches (from 2026-06-11 to
+        today) via API-Football, update each team's Elo rating sequentially by
+        kick-off time, and record results in match_history.json for form tracking.
+
+        Safe to call repeatedly — already-recorded fixtures are skipped.
+        Dates outside the free-plan window (~3 days around today) are silently
+        skipped; call on successive days to progressively capture all matches.
+        Returns per-match Elo deltas so you can see how much each result moved
+        each team's rating.
+        """
+        try:
+            return seed_history.seed_world_cup_results()
+        except Exception as exc:
+            return {"error": str(exc)}
+
+    @mcp.tool
     def get_tournament_status() -> dict:
         """Return a summary of recorded predictions: played, pending, and per-group breakdown."""
         records = _load_predictions()

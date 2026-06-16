@@ -53,5 +53,130 @@
     "outcome": "away_win",
     "competition": "Friendlies",
     "fixture_id": 1548458
+  },
+  {
+    "home": "Sweden",
+    "away": "Tunisia",
+    "score_home": 5,
+    "score_away": 1,
+    "rating_home_pre": 1792.7,
+    "rating_away_pre": 1547.3,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1539002,
+    "stats": {
+      "home": {
+        "possession": 49,
+        "shots_on_target": 7,
+        "total_shots": 13,
+        "passes_pct": 79
+      },
+      "away": {
+        "possession": 51,
+        "shots_on_target": 2,
+        "total_shots": 6,
+        "passes_pct": 79
+      }
+    }
+  },
+  {
+    "home": "Spain",
+    "away": "Cape Verde",
+    "score_home": 0,
+    "score_away": 0,
+    "rating_home_pre": 2093.2,
+    "rating_away_pre": 1641.8,
+    "outcome": "draw",
+    "competition": "World Cup",
+    "fixture_id": 1489380,
+    "stats": {
+      "home": {
+        "possession": 74,
+        "shots_on_target": 7,
+        "total_shots": 27,
+        "passes_pct": 92
+      },
+      "away": {
+        "possession": 26,
+        "shots_on_target": 1,
+        "total_shots": 6,
+        "passes_pct": 73
+      }
+    }
+  },
+  {
+    "home": "Belgium",
+    "away": "Egypt",
+    "score_home": 1,
+    "score_away": 1,
+    "rating_home_pre": 1861.9,
+    "rating_away_pre": 1728.1,
+    "outcome": "draw",
+    "competition": "World Cup",
+    "fixture_id": 1489377,
+    "stats": {
+      "home": {
+        "possession": 54,
+        "shots_on_target": 3,
+        "total_shots": 15,
+        "passes_pct": 86
+      },
+      "away": {
+        "possession": 46,
+        "shots_on_target": 3,
+        "total_shots": 14,
+        "passes_pct": 81
+      }
+    }
+  },
+  {
+    "home": "Saudi Arabia",
+    "away": "Uruguay",
+    "score_home": 1,
+    "score_away": 1,
+    "rating_home_pre": 1623.3,
+    "rating_away_pre": 1844.7,
+    "outcome": "draw",
+    "competition": "World Cup",
+    "fixture_id": 1489379,
+    "stats": {
+      "home": {
+        "possession": 33,
+        "shots_on_target": 3,
+        "total_shots": 7,
+        "passes_pct": 73
+      },
+      "away": {
+        "possession": 67,
+        "shots_on_target": 10,
+        "total_shots": 27,
+        "passes_pct": 88
+      }
+    }
+  },
+  {
+    "home": "Iran",
+    "away": "New Zealand",
+    "score_home": 2,
+    "score_away": 2,
+    "rating_home_pre": 1738.0,
+    "rating_away_pre": 1596.0,
+    "outcome": "draw",
+    "competition": "World Cup",
+    "fixture_id": 1489378,
+    "stats": {
+      "home": {
+        "possession": 48,
+        "shots_on_target": 4,
+        "total_shots": 17,
+        "passes_pct": 77
+      },
+      "away": {
+        "possession": 52,
+        "shots_on_target": 8,
+        "total_shots": 14,
+        "passes_pct": 85
+      }
+    }
   }
 ]

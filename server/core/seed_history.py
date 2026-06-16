@@ -1,23 +1,26 @@
-"""Backfill match_history.json with recently-finished friendlies involving
-World Cup 2026 teams.
+"""Backfill match_history.json with finished matches involving World Cup 2026 teams.
 
-The free API-Football plan has no season-agnostic "team's last N matches"
-endpoint (season is locked to 2022-2024 and `last`/`next` are blocked -- see
-football_api.py), so the only reachable source of recent results is
-`fixtures_on_date`, which itself only covers a ~3-day window around today.
-This scans that window for finished matches involving a World Cup team, tags
-each with its competition (for form.py's competition-weighted average), and
-records it via data.append_match_history -- using eloratings.net
-(fetch.fetch_live_ratings, no API-Football cost) for pre-match ratings of both
-sides, since data/elo_ratings.json is itself sourced from eloratings.net.
+Two entry points:
+- seed_recent_friendlies(): scans the ~3-day API-Football date window around
+  today for any finished match involving a WC team (designed for pre-tournament
+  friendlies). Uses eloratings.net for pre-match ratings.
+- seed_world_cup_results(): scans from the tournament start (2026-06-11) to
+  today for finished World Cup matches (league_id=1). Updates Elo ratings
+  sequentially by kick-off time, just like update_match_result, so the Elo
+  file reflects every match already played.
 
-Safe to call repeatedly: each fixture's API-Football id is stored as
-"fixture_id" and used to skip duplicates on rerun.
+Both are idempotent: each fixture's API-Football id is stored in
+match_history.json and used to skip duplicates on rerun.
+
+Free-plan date window: `fixtures?date=` covers a rolling ~3-day window.
+seed_world_cup_results tries all dates since the tournament start; dates older
+than the API window return an empty response (or an error, which is caught
+per-date) and are simply skipped.
 """
 
 from datetime import date, timedelta
 
-from server.core import data, fetch
+from server.core import data, elo, fetch
 from server.core import football_api as api
 
 # API-Football team name -> our internal name (groups.json / eloratings.net),
@@ -32,9 +35,64 @@ _NAME_MAP: dict[str, str] = {
 }
 
 
+_WC_START = date(2026, 6, 11)
+
+
 def _default_dates() -> list[str]:
     today = date.today()
     return [(today + timedelta(days=offset)).isoformat() for offset in (-1, 0, 1)]
+
+
+def _dates_since_wc_start() -> list[str]:
+    today = date.today()
+    start = min(_WC_START, today)
+    return [(start + timedelta(days=i)).isoformat() for i in range((today - start).days + 1)]
+
+
+def _parse_stats(stats_response: list[dict], home_id: int, away_id: int) -> dict | None:
+    """Extract possession + shots from API-Football statistics response, keyed home/away."""
+    by_id = {td["team"]["id"]: td["statistics"] for td in stats_response}
+
+    def _val(stats: list[dict], key: str) -> int | None:
+        for s in stats:
+            if s["type"] == key:
+                v = s["value"]
+                if v is None:
+                    return None
+                if isinstance(v, str) and v.endswith("%"):
+                    try:
+                        return int(v.rstrip("%"))
+                    except ValueError:
+                        return None
+                try:
+                    return int(v)
+                except (TypeError, ValueError):
+                    return None
+        return None
+
+    result: dict = {}
+    for side, tid in [("home", home_id), ("away", away_id)]:
+        team_stats = by_id.get(tid)
+        if not team_stats:
+            return None
+        result[side] = {
+            "possession":       _val(team_stats, "Ball Possession"),
+            "shots_on_target":  _val(team_stats, "Shots on Goal"),
+            "total_shots":      _val(team_stats, "Total Shots"),
+            "passes_pct":       _val(team_stats, "Passes %"),
+        }
+    return result
+
+
+def _fetch_stats(fx: dict) -> dict | None:
+    """Fetch and parse fixture statistics; returns None on any error."""
+    try:
+        raw = api.fixture_statistics(fx["fixture"]["id"])
+    except api.APIFootballError:
+        return None
+    if not raw:
+        return None
+    return _parse_stats(raw, fx["teams"]["home"]["id"], fx["teams"]["away"]["id"])
 
 
 def _entry_from_fixture(fx: dict, wc_teams: set[str], live_ratings: dict[str, float],
@@ -85,8 +143,102 @@ def seed_recent_friendlies(dates: list[str] | None = None) -> dict:
             entry = _entry_from_fixture(fx, wc_teams, live_ratings, seen_ids)
             if entry is None:
                 continue
+            stats = _fetch_stats(fx)
+            if stats:
+                entry["stats"] = stats
             data.append_match_history(entry)
             seen_ids.add(entry["fixture_id"])
             added.append(entry)
 
     return {"added": len(added), "matches": added}
+
+
+def seed_world_cup_results(dates: list[str] | None = None) -> dict:
+    """Fetch finished World Cup (league_id=1) matches on `dates`, update Elo
+    ratings sequentially by kick-off time, and append results to
+    match_history.json.
+
+    Defaults to every date from the tournament start (2026-06-11) to today.
+    Dates outside the free-plan API window are silently skipped (empty response
+    or APIFootballError). Matches are processed in chronological kick-off order
+    so each team's Elo reflects the correct pre-match rating.
+    """
+    wc_teams = set(data.all_teams())
+    seen_ids = {e["fixture_id"] for e in data.load_match_history() if "fixture_id" in e}
+
+    scan_dates = dates if dates is not None else _dates_since_wc_start()
+
+    # Collect all new finished WC matches, tolerating per-date API errors
+    candidates = []
+    date_errors = []
+    for d in scan_dates:
+        try:
+            for fx in api.fixtures_on_date(d):
+                if fx["league"]["id"] != api.WORLD_CUP_LEAGUE_ID:
+                    continue
+                s = api.simplify_fixture(fx)
+                if s["status"] != "Match Finished":
+                    continue
+                fixture_id = fx["fixture"]["id"]
+                if fixture_id in seen_ids:
+                    continue
+                home = _NAME_MAP.get(s["home"], s["home"])
+                away = _NAME_MAP.get(s["away"], s["away"])
+                if home not in wc_teams or away not in wc_teams:
+                    continue
+                if s["score"] is None:
+                    continue
+                candidates.append((fx["fixture"]["date"], fx, home, away, s, fixture_id))
+        except api.APIFootballError as exc:
+            date_errors.append({"date": d, "error": str(exc)})
+
+    # Process in kick-off order so Elo updates are sequential
+    candidates.sort(key=lambda x: x[0])
+
+    added = []
+    for _, fx, home, away, s, fixture_id in candidates:
+        try:
+            r_home = data.rating_of(home)
+            r_away = data.rating_of(away)
+        except KeyError:
+            continue
+
+        score_home, score_away = (int(x) for x in s["score"].split("-"))
+        outcome = (
+            "home_win" if score_home > score_away
+            else "draw" if score_home == score_away
+            else "away_win"
+        )
+
+        new_home, new_away = elo.update_ratings(r_home, r_away, score_home, score_away)
+        ratings = dict(data.load_ratings())
+        ratings[home] = new_home
+        ratings[away] = new_away
+        data.save_ratings(ratings, source="post-match")
+
+        entry = {
+            "home": home, "away": away,
+            "score_home": score_home, "score_away": score_away,
+            "rating_home_pre": r_home, "rating_away_pre": r_away,
+            "outcome": outcome,
+            "competition": fx["league"]["name"],
+            "fixture_id": fixture_id,
+        }
+        stats = _fetch_stats(fx)
+        if stats:
+            entry["stats"] = stats
+        data.append_match_history(entry)
+        seen_ids.add(fixture_id)
+        added.append({
+            "match": f"{home} {score_home}-{score_away} {away}",
+            "date": fx["fixture"]["date"][:10],
+            "elo_changes": {
+                home: round(new_home - r_home, 1),
+                away: round(new_away - r_away, 1),
+            },
+        })
+
+    result: dict = {"added": len(added), "matches": added}
+    if date_errors:
+        result["date_errors"] = date_errors
+    return result

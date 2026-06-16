@@ -104,6 +104,17 @@ def head_to_head(team_a: str, team_b: str) -> list[dict]:
     return cache.cached(key, _TTL_H2H, fetch)
 
 
+_TTL_STATS = 7 * 24 * 3600  # stats are immutable once a match is finished
+
+
+def fixture_statistics(fixture_id: int) -> list[dict]:
+    """Per-team statistics for a finished fixture (possession, shots, passes…)."""
+    def fetch():
+        body = _get("fixtures/statistics", {"fixture": fixture_id})
+        return body.get("response", [])
+    return cache.cached(f"stats_{fixture_id}", _TTL_STATS, fetch)
+
+
 def injuries(team: str, date: str) -> list[dict]:
     """Injury list for a national team on `date` (YYYY-MM-DD).
 
