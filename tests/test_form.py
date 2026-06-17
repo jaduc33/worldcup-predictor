@@ -53,6 +53,49 @@ def test_match_weight_friendly_vs_competitive():
     assert form._match_weight({}) == 1.0
 
 
+def _match(home, away, score_home, score_away, r_home=1900.0, r_away=1900.0, stats=None):
+    entry = {"home": home, "away": away, "score_home": score_home, "score_away": score_away,
+             "rating_home_pre": r_home, "rating_away_pre": r_away,
+             "outcome": "home_win" if score_home > score_away else ("draw" if score_home == score_away else "away_win")}
+    if stats:
+        entry["stats"] = stats
+    return entry
+
+
+def test_stats_shots_on_target_dominance_boosts_form():
+    """Dominating in SOT beyond what Elo expects should yield a higher form than no stats."""
+    base = _match("France", "Brazil", 1, 0)
+    with_sot = _match("France", "Brazil", 1, 0,
+                       stats={"home": {"shots_on_target": 10, "xg": None},
+                               "away": {"shots_on_target": 2, "xg": None}})
+    history_no_stats = [base, base]
+    history_with_stats = [with_sot, with_sot]
+    assert form.team_form_adjustment("France", history=history_with_stats) > \
+           form.team_form_adjustment("France", history=history_no_stats)
+
+
+def test_stats_xg_dominance_boosts_form():
+    """High xG for + low xG against beyond expectation should boost form."""
+    base = _match("France", "Brazil", 1, 0)
+    with_xg = _match("France", "Brazil", 1, 0,
+                      stats={"home": {"shots_on_target": None, "xg": 3.0},
+                              "away": {"shots_on_target": None, "xg": 0.3}})
+    history_no_stats = [base, base]
+    history_with_xg = [with_xg, with_xg]
+    assert form.team_form_adjustment("France", history=history_with_xg) > \
+           form.team_form_adjustment("France", history=history_no_stats)
+
+
+def test_stats_missing_fields_do_not_crash():
+    """Partial or empty stats dicts should not raise errors."""
+    history = [
+        _match("France", "Brazil", 2, 1, stats={"home": {}, "away": {}}),
+        _match("France", "Brazil", 2, 1, stats={"home": {}, "away": {}}),
+    ]
+    result = form.team_form_adjustment("France", history=history)
+    assert isinstance(result, float)
+
+
 def test_friendly_results_count_less_than_competitive_in_mixed_history():
     overperformance = {"home": "France", "away": "Brazil", "score_home": 6, "score_away": 0,
                         "rating_home_pre": 1500.0, "rating_away_pre": 2300.0, "outcome": "home_win"}

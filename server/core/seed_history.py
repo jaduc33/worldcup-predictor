@@ -49,50 +49,12 @@ def _dates_since_wc_start() -> list[str]:
     return [(start + timedelta(days=i)).isoformat() for i in range((today - start).days + 1)]
 
 
-def _parse_stats(stats_response: list[dict], home_id: int, away_id: int) -> dict | None:
-    """Extract possession + shots from API-Football statistics response, keyed home/away."""
-    by_id = {td["team"]["id"]: td["statistics"] for td in stats_response}
-
-    def _val(stats: list[dict], key: str) -> int | None:
-        for s in stats:
-            if s["type"] == key:
-                v = s["value"]
-                if v is None:
-                    return None
-                if isinstance(v, str) and v.endswith("%"):
-                    try:
-                        return int(v.rstrip("%"))
-                    except ValueError:
-                        return None
-                try:
-                    return int(v)
-                except (TypeError, ValueError):
-                    return None
-        return None
-
-    result: dict = {}
-    for side, tid in [("home", home_id), ("away", away_id)]:
-        team_stats = by_id.get(tid)
-        if not team_stats:
-            return None
-        result[side] = {
-            "possession":       _val(team_stats, "Ball Possession"),
-            "shots_on_target":  _val(team_stats, "Shots on Goal"),
-            "total_shots":      _val(team_stats, "Total Shots"),
-            "passes_pct":       _val(team_stats, "Passes %"),
-        }
-    return result
-
-
 def _fetch_stats(fx: dict) -> dict | None:
-    """Fetch and parse fixture statistics; returns None on any error."""
+    """Fetch parsed fixture statistics from football_api; returns None on any error."""
     try:
-        raw = api.fixture_statistics(fx["fixture"]["id"])
+        return api.fixture_statistics(fx["fixture"]["id"])
     except api.APIFootballError:
         return None
-    if not raw:
-        return None
-    return _parse_stats(raw, fx["teams"]["home"]["id"], fx["teams"]["away"]["id"])
 
 
 def _entry_from_fixture(fx: dict, wc_teams: set[str], live_ratings: dict[str, float],
@@ -241,4 +203,41 @@ def seed_world_cup_results(dates: list[str] | None = None) -> dict:
     result: dict = {"added": len(added), "matches": added}
     if date_errors:
         result["date_errors"] = date_errors
+    return result
+
+
+def backfill_match_stats() -> dict:
+    """Fetch and attach statistics (shots, possession, passes, xG) for all
+    match_history.json entries that have a fixture_id but no stats yet.
+
+    Safe to call repeatedly — entries that already have stats are skipped.
+    Uses the cached fixture_statistics endpoint (7-day TTL) so repeated calls
+    cost no extra API quota.
+    """
+    import json
+
+    history = list(data.load_match_history())
+    updated = 0
+    errors = []
+
+    for i, entry in enumerate(history):
+        if "fixture_id" not in entry or "stats" in entry:
+            continue
+        try:
+            stats = api.fixture_statistics(entry["fixture_id"])
+            if stats:
+                history[i] = {**entry, "stats": stats}
+                updated += 1
+        except api.APIFootballError as exc:
+            errors.append({"fixture_id": entry["fixture_id"], "error": str(exc)})
+
+    if updated:
+        data.HISTORY_FILE.write_text(
+            json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        data.load_match_history.cache_clear()
+
+    result: dict = {"updated": updated}
+    if errors:
+        result["errors"] = errors
     return result

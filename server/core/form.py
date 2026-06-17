@@ -13,7 +13,9 @@ them less representative of a team's "real" current level.
 """
 
 from server.core import elo
-from server.core.config import FORM_MAX_ADJUSTMENT, FORM_WEIGHT, FORM_WINDOW, FRIENDLY_FORM_WEIGHT
+from server.core.config import (
+    FORM_MAX_ADJUSTMENT, FORM_WEIGHT, FORM_WINDOW, FRIENDLY_FORM_WEIGHT, STATS_FORM_WEIGHT,
+)
 
 _FRIENDLY_COMPETITIONS = {"Friendlies"}
 
@@ -41,19 +43,31 @@ def _match_form_score(entry: dict, team: str) -> float:
 
     score = points_term + 0.3 * gd_term
 
-    # Shots-on-target term: did the team create more/fewer chances than Elo predicts?
+    # Stats terms (when match_history entry carries a "stats" field):
+    #   - Shots-on-target ratio vs Elo-expected win probability (chance-creation dominance)
+    #   - xG difference vs Elo-expected goal difference (quality of chances vs expectation)
+    # Both use STATS_FORM_WEIGHT so a single env-var tunes or disables the whole block.
     stats = entry.get("stats")
-    if stats:
+    if stats and STATS_FORM_WEIGHT:
         side = "home" if is_home else "away"
         opp = "away" if is_home else "home"
-        sot_for = (stats.get(side) or {}).get("shots_on_target")
-        sot_against = (stats.get(opp) or {}).get("shots_on_target")
+        side_stats = stats.get(side) or {}
+        opp_stats = stats.get(opp) or {}
+
+        sot_for = side_stats.get("shots_on_target")
+        sot_against = opp_stats.get("shots_on_target")
         if sot_for is not None and sot_against is not None:
             total_sot = sot_for + sot_against
             if total_sot > 0:
                 actual_ratio = sot_for / total_sot
                 expected_ratio = elo.win_expectancy(rating_for, rating_against)
-                score += 0.5 * (actual_ratio - expected_ratio)
+                score += STATS_FORM_WEIGHT * (actual_ratio - expected_ratio)
+
+        xg_for = side_stats.get("xg")
+        xg_against = opp_stats.get("xg")
+        if xg_for is not None and xg_against is not None:
+            expected_gd = goals_for - goals_against
+            score += STATS_FORM_WEIGHT * ((xg_for - xg_against) - expected_gd)
 
     return score
 

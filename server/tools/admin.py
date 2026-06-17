@@ -116,6 +116,23 @@ def register(mcp):
             return {"error": str(exc)}
 
     @mcp.tool
+    def backfill_match_stats() -> dict:
+        """Fetch and attach detailed statistics (shots on target, possession,
+        passes, corners, cards, xG) for all match_history.json entries that
+        have a fixture_id but no stats yet.
+
+        Safe to run repeatedly — already-enriched entries are skipped. Stats
+        are cached for 7 days so re-running costs no extra API quota. After
+        this call, form.py will use the stats (shots-on-target ratio and xG
+        dominance) in addition to the score-based signal when computing each
+        team's form adjustment.
+        """
+        try:
+            return seed_history.backfill_match_stats()
+        except Exception as exc:
+            return {"error": str(exc)}
+
+    @mcp.tool
     def get_tournament_status() -> dict:
         """Return a summary of recorded predictions: played, pending, and per-group breakdown."""
         records = _load_predictions()

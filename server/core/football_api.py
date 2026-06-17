@@ -104,15 +104,52 @@ def head_to_head(team_a: str, team_b: str) -> list[dict]:
     return cache.cached(key, _TTL_H2H, fetch)
 
 
-_TTL_STATS = 7 * 24 * 3600  # stats are immutable once a match is finished
+_TTL_STATS = 7 * 24 * 3600  # stats are immutable after the final whistle
 
 
-def fixture_statistics(fixture_id: int) -> list[dict]:
-    """Per-team statistics for a finished fixture (possession, shots, passes…)."""
+def fixture_statistics(fixture_id: int) -> dict | None:
+    """Per-team statistics for a finished fixture: shots, possession, passes, xG.
+
+    Returns {"home": {...}, "away": {...}} or None if the API returns no data.
+    Home/away order in the raw response matches the fixture's home/away teams.
+    """
     def fetch():
         body = _get("fixtures/statistics", {"fixture": fixture_id})
         return body.get("response", [])
-    return cache.cached(f"stats_{fixture_id}", _TTL_STATS, fetch)
+
+    raw = cache.cached(f"stats_{fixture_id}", _TTL_STATS, fetch)
+    if len(raw) < 2:
+        return None
+
+    def _parse(team_stats: dict) -> dict:
+        out: dict = {}
+        for s in team_stats.get("statistics", []):
+            t, v = s["type"], s["value"]
+            if t == "Shots on Goal":
+                out["shots_on_target"] = int(v or 0)
+            elif t == "Total Shots":
+                out["total_shots"] = int(v or 0)
+            elif t == "Ball Possession":
+                out["possession"] = int(str(v).replace("%", "")) if v else None
+            elif t == "Total passes":
+                out["passes"] = int(v or 0)
+            elif t == "Passes accurate":
+                out["passes_accurate"] = int(v or 0)
+            elif t == "Passes %":
+                out["passes_pct"] = int(str(v).replace("%", "")) if v else None
+            elif t == "Corner Kicks":
+                out["corners"] = int(v or 0)
+            elif t == "Fouls":
+                out["fouls"] = int(v or 0)
+            elif t == "Yellow Cards":
+                out["yellow_cards"] = int(v or 0)
+            elif t == "Red Cards":
+                out["red_cards"] = int(v or 0)
+            elif t == "expected_goals":
+                out["xg"] = float(v) if v else None
+        return out
+
+    return {"home": _parse(raw[0]), "away": _parse(raw[1])}
 
 
 def injuries(team: str, date: str) -> list[dict]:

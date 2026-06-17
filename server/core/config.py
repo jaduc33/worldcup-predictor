@@ -47,6 +47,11 @@ H2H_MIN_MATCHES = _int("H2H_MIN_MATCHES", 3)   # minimum H2H meetings to apply a
 H2H_MAX_MATCHES = _int("H2H_MAX_MATCHES", 10)  # cap on meetings considered
 H2H_DECAY = _float("H2H_DECAY", 0.85)          # recency decay per meeting (most-recent-first)
 
+# --- Match statistics (shots, xG) form weight ----------------------------------------
+STATS_FORM_WEIGHT = _float("STATS_FORM_WEIGHT", 0.5)  # contribution of per-match stats
+                                                        # (shots-on-target ratio, xG dominance)
+                                                        # to the form score; 0 disables stats
+
 # --- Monte Carlo group simulation ----------------------------------------------------
 MONTE_CARLO_ITERATIONS = _int("MONTE_CARLO_ITERATIONS", 2000)  # 12 groups x 6 matches x N
 

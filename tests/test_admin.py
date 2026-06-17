@@ -143,6 +143,60 @@ def test_seed_world_cup_results_skips_duplicate_fixture(mcp_app, monkeypatch):
     assert result2["added"] == 0
 
 
+def test_seed_world_cup_results_stores_stats_when_available(mcp_app, monkeypatch):
+    from server.core import seed_history
+
+    fixtures = [_fake_wc_fixture("France", "Brazil", 2, 1, fixture_id=9100)]
+    monkeypatch.setattr(seed_history.api, "fixtures_on_date", lambda d: fixtures)
+    monkeypatch.setattr(seed_history, "_dates_since_wc_start", lambda: ["2026-06-12"])
+    fake_stats = {"home": {"shots_on_target": 8, "total_shots": 14, "possession": 60, "xg": 2.1},
+                  "away": {"shots_on_target": 3, "total_shots": 8, "possession": 40, "xg": 0.9}}
+    monkeypatch.setattr(seed_history.api, "fixture_statistics", lambda fid: fake_stats)
+
+    call_tool(mcp_app, "seed_world_cup_results", {})
+
+    history = data.load_match_history()
+    entry = next(e for e in history if e.get("fixture_id") == 9100)
+    assert entry["stats"] == fake_stats
+
+
+def test_backfill_match_stats_adds_stats_to_existing_entries(mcp_app, monkeypatch):
+    from server.core import seed_history
+
+    # Seed a match without stats
+    fixtures = [_fake_wc_fixture("France", "Brazil", 2, 1, fixture_id=9200)]
+    monkeypatch.setattr(seed_history.api, "fixtures_on_date", lambda d: fixtures)
+    monkeypatch.setattr(seed_history, "_dates_since_wc_start", lambda: ["2026-06-12"])
+    monkeypatch.setattr(seed_history.api, "fixture_statistics", lambda fid: None)
+    call_tool(mcp_app, "seed_world_cup_results", {})
+
+    # Now backfill with stats
+    fake_stats = {"home": {"shots_on_target": 7, "xg": 1.8}, "away": {"shots_on_target": 4, "xg": 1.1}}
+    monkeypatch.setattr(seed_history.api, "fixture_statistics", lambda fid: fake_stats)
+
+    result = call_tool(mcp_app, "backfill_match_stats", {})
+    assert result["updated"] == 1
+
+    history = data.load_match_history()
+    entry = next(e for e in history if e.get("fixture_id") == 9200)
+    assert entry["stats"] == fake_stats
+
+
+def test_backfill_match_stats_skips_entries_already_having_stats(mcp_app, monkeypatch):
+    from server.core import seed_history
+
+    fake_stats = {"home": {"shots_on_target": 5, "xg": 1.5}, "away": {"shots_on_target": 3, "xg": 0.8}}
+    fixtures = [_fake_wc_fixture("France", "Brazil", 2, 1, fixture_id=9300)]
+    monkeypatch.setattr(seed_history.api, "fixtures_on_date", lambda d: fixtures)
+    monkeypatch.setattr(seed_history, "_dates_since_wc_start", lambda: ["2026-06-12"])
+    monkeypatch.setattr(seed_history.api, "fixture_statistics", lambda fid: fake_stats)
+    call_tool(mcp_app, "seed_world_cup_results", {})
+
+    # Backfill should skip — stats already present
+    result = call_tool(mcp_app, "backfill_match_stats", {})
+    assert result["updated"] == 0
+
+
 def test_seed_world_cup_results_returns_error_on_exception(mcp_app, monkeypatch):
     def _raise():
         raise RuntimeError("boom")
