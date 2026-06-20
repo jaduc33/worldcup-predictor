@@ -716,5 +716,161 @@
         "xg": 0.69
       }
     }
+  },
+  {
+    "home": "USA",
+    "away": "Australia",
+    "score_home": 2,
+    "score_away": 0,
+    "rating_home_pre": 1815.0,
+    "rating_away_pre": 1869.9,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1489391,
+    "stats": {
+      "home": {
+        "shots_on_target": 2,
+        "total_shots": 10,
+        "fouls": 12,
+        "corners": 7,
+        "possession": 62,
+        "yellow_cards": 3,
+        "red_cards": 0,
+        "passes": 524,
+        "passes_accurate": 447,
+        "passes_pct": 85,
+        "xg": 1.3
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 5,
+        "fouls": 16,
+        "corners": 4,
+        "possession": 38,
+        "yellow_cards": 4,
+        "red_cards": 0,
+        "passes": 308,
+        "passes_accurate": 221,
+        "passes_pct": 72,
+        "xg": 0.44
+      }
+    }
+  },
+  {
+    "home": "Scotland",
+    "away": "Morocco",
+    "score_home": 0,
+    "score_away": 1,
+    "rating_home_pre": 1801.4,
+    "rating_away_pre": 1847.6,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1489390,
+    "stats": {
+      "home": {
+        "shots_on_target": 0,
+        "total_shots": 6,
+        "fouls": 10,
+        "corners": 1,
+        "possession": 41,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 454,
+        "passes_accurate": 388,
+        "passes_pct": 85,
+        "xg": 0.54
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 12,
+        "fouls": 8,
+        "corners": 5,
+        "possession": 59,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 671,
+        "passes_accurate": 601,
+        "passes_pct": 90,
+        "xg": 0.95
+      }
+    }
+  },
+  {
+    "home": "Brazil",
+    "away": "Haiti",
+    "score_home": 3,
+    "score_away": 0,
+    "rating_home_pre": 1970.4,
+    "rating_away_pre": 1528.6,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1489389,
+    "stats": {
+      "home": {
+        "shots_on_target": 5,
+        "total_shots": 8,
+        "fouls": 13,
+        "corners": 4,
+        "possession": 57,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 522,
+        "passes_accurate": 461,
+        "passes_pct": 88,
+        "xg": 1.5
+      },
+      "away": {
+        "shots_on_target": 3,
+        "total_shots": 8,
+        "fouls": 15,
+        "corners": 4,
+        "possession": 43,
+        "yellow_cards": 3,
+        "red_cards": 0,
+        "passes": 399,
+        "passes_accurate": 331,
+        "passes_pct": 83,
+        "xg": 0.25
+      }
+    }
+  },
+  {
+    "home": "Netherlands",
+    "away": "Sweden",
+    "score_home": 5,
+    "score_away": 1,
+    "rating_home_pre": 1942.0,
+    "rating_away_pre": 1755.0,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1539007,
+    "stats": {
+      "home": {
+        "shots_on_target": 7,
+        "total_shots": 10,
+        "fouls": 9,
+        "corners": 2,
+        "possession": 51,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 450,
+        "passes_accurate": 397,
+        "passes_pct": 88,
+        "xg": 2.47
+      },
+      "away": {
+        "shots_on_target": 8,
+        "total_shots": 16,
+        "fouls": 12,
+        "corners": 5,
+        "possession": 49,
+        "yellow_cards": 3,
+        "red_cards": 0,
+        "passes": 424,
+        "passes_accurate": 361,
+        "passes_pct": 85,
+        "xg": 0.98
+      }
+    }
   }
 ]
