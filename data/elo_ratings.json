@@ -2,7 +2,7 @@
   "_note": "SEED VALUES — rough approximations of national-team Elo, used only to bootstrap the model. Replace at runtime with live data (e.g. eloratings.net) via the ratings tool. The whole point of the architecture is that this file is swappable.",
   "source": "post-match",
   "ratings": {
-    "Argentina": 2135.5,
+    "Argentina": 2146.3,
     "France": 2095.8,
     "Spain": 2132.4,
     "England": 2044.7,
@@ -12,7 +12,7 @@
     "Belgium": 1872.2,
     "Germany": 1954.0,
     "Croatia": 1891.3,
-    "Uruguay": 1870.0,
+    "Uruguay": 1857.2,
     "Colombia": 1992.6,
     "Morocco": 1865.0,
     "Japan": 1921.9,
@@ -23,7 +23,7 @@
     "USA": 1849.7,
     "Turkiye": 1818.1,
     "Mexico": 1902.6,
-    "Austria": 1871.2,
+    "Austria": 1860.4,
     "Iran": 1762.8,
     "Sweden": 1735.9,
     "South Korea": 1786.6,
@@ -34,7 +34,7 @@
     "Ivory Coast": 1760.2,
     "Czechia": 1686.2,
     "Paraguay": 1745.0,
-    "Egypt": 1711.0,
+    "Egypt": 1730.0,
     "Ghana": 1541.2,
     "Australia": 1835.2,
     "Tunisia": 1575.1,
@@ -46,9 +46,9 @@
     "Uzbekistan": 1703.4,
     "Iraq": 1583.2,
     "Jordan": 1638.8,
-    "Cape Verde": 1606.0,
+    "Cape Verde": 1618.8,
     "Curacao": 1422.8,
     "Haiti": 1523.5,
-    "New Zealand": 1578.0
+    "New Zealand": 1559.0
   }
 }
