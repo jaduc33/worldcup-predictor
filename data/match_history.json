@@ -1301,5 +1301,93 @@
         "xg": 0.25
       }
     }
+  },
+  {
+    "home": "England",
+    "away": "Ghana",
+    "score_home": 0,
+    "score_away": 0,
+    "rating_home_pre": 2044.7,
+    "rating_away_pre": 1541.2,
+    "outcome": "draw",
+    "competition": "World Cup",
+    "fixture_id": 1489402,
+    "stats": {
+      "home": {
+        "shots_on_target": 3,
+        "total_shots": 19,
+        "fouls": 14,
+        "corners": 9,
+        "possession": 79,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 633,
+        "passes_accurate": 586,
+        "passes_pct": 93,
+        "xg": 1.36
+      },
+      "away": {
+        "shots_on_target": 1,
+        "total_shots": 2,
+        "fouls": 24,
+        "corners": 2,
+        "possession": 21,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 172,
+        "passes_accurate": 127,
+        "passes_pct": 74,
+        "xg": 0.17
+      }
+    }
+  },
+  {
+    "home": "Panama",
+    "away": "Croatia",
+    "score_home": 0,
+    "score_away": 1,
+    "rating_home_pre": 1698.8,
+    "rating_away_pre": 1891.3,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1489403,
+    "stats": {
+      "home": {
+        "shots_on_target": 1,
+        "total_shots": 8,
+        "fouls": 19,
+        "corners": 7,
+        "possession": 42,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 352,
+        "passes_accurate": 277,
+        "passes_pct": 79,
+        "xg": 0.55
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 6,
+        "fouls": 12,
+        "corners": 2,
+        "possession": 58,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 512,
+        "passes_accurate": 432,
+        "passes_pct": 84,
+        "xg": 1.65
+      }
+    }
+  },
+  {
+    "home": "Colombia",
+    "away": "DR Congo",
+    "score_home": 1,
+    "score_away": 0,
+    "rating_home_pre": 1992.6,
+    "rating_away_pre": 1667.0,
+    "outcome": "home_win",
+    "competition": "World Cup"
   }
 ]
