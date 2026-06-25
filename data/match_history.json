@@ -1389,5 +1389,200 @@
     "rating_away_pre": 1667.0,
     "outcome": "home_win",
     "competition": "World Cup"
+  },
+  {
+    "home": "Switzerland",
+    "away": "Canada",
+    "score_home": 2,
+    "score_away": 1,
+    "rating_home_pre": 1848.3,
+    "rating_away_pre": 1771.9,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1489408,
+    "stats": {
+      "home": {
+        "shots_on_target": 4,
+        "total_shots": 6,
+        "fouls": 19,
+        "corners": 2,
+        "possession": 55,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 441,
+        "passes_accurate": 367,
+        "passes_pct": 83,
+        "xg": 1.06
+      },
+      "away": {
+        "shots_on_target": 7,
+        "total_shots": 13,
+        "fouls": 13,
+        "corners": 7,
+        "possession": 45,
+        "yellow_cards": 2,
+        "red_cards": 0,
+        "passes": 339,
+        "passes_accurate": 271,
+        "passes_pct": 80,
+        "xg": 1.27
+      }
+    }
+  },
+  {
+    "home": "Morocco",
+    "away": "Haiti",
+    "score_home": 4,
+    "score_away": 2,
+    "rating_home_pre": 1865.0,
+    "rating_away_pre": 1523.5,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1489405,
+    "stats": {
+      "home": {
+        "shots_on_target": 11,
+        "total_shots": 22,
+        "fouls": 10,
+        "corners": 9,
+        "possession": 69,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 541,
+        "passes_accurate": 477,
+        "passes_pct": 88,
+        "xg": 3.76
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 9,
+        "fouls": 18,
+        "corners": 1,
+        "possession": 31,
+        "yellow_cards": 3,
+        "red_cards": 0,
+        "passes": 247,
+        "passes_accurate": 198,
+        "passes_pct": 80,
+        "xg": 0.67
+      }
+    }
+  },
+  {
+    "home": "Scotland",
+    "away": "Brazil",
+    "score_home": 0,
+    "score_away": 3,
+    "rating_home_pre": 1784.0,
+    "rating_away_pre": 1975.5,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1489406,
+    "stats": {
+      "home": {
+        "shots_on_target": 5,
+        "total_shots": 14,
+        "fouls": 10,
+        "corners": 7,
+        "possession": 46,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 500,
+        "passes_accurate": 450,
+        "passes_pct": 90,
+        "xg": 1.04
+      },
+      "away": {
+        "shots_on_target": 9,
+        "total_shots": 21,
+        "fouls": 11,
+        "corners": 6,
+        "possession": 54,
+        "yellow_cards": 2,
+        "red_cards": 0,
+        "passes": 605,
+        "passes_accurate": 564,
+        "passes_pct": 93,
+        "xg": 4.33
+      }
+    }
+  },
+  {
+    "home": "South Africa",
+    "away": "South Korea",
+    "score_home": 1,
+    "score_away": 0,
+    "rating_home_pre": 1514.6,
+    "rating_away_pre": 1786.6,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1489407,
+    "stats": {
+      "home": {
+        "shots_on_target": 4,
+        "total_shots": 13,
+        "fouls": 7,
+        "corners": 4,
+        "possession": 32,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 339,
+        "passes_accurate": 277,
+        "passes_pct": 82,
+        "xg": 1.1
+      },
+      "away": {
+        "shots_on_target": 3,
+        "total_shots": 8,
+        "fouls": 9,
+        "corners": 6,
+        "possession": 68,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 720,
+        "passes_accurate": 643,
+        "passes_pct": 89,
+        "xg": 1.0
+      }
+    }
+  },
+  {
+    "home": "Czechia",
+    "away": "Mexico",
+    "score_home": 0,
+    "score_away": 3,
+    "rating_home_pre": 1686.2,
+    "rating_away_pre": 1902.6,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1539010,
+    "stats": {
+      "home": {
+        "shots_on_target": 1,
+        "total_shots": 13,
+        "fouls": 9,
+        "corners": 5,
+        "possession": 52,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 398,
+        "passes_accurate": 332,
+        "passes_pct": 83,
+        "xg": 0.47
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 11,
+        "fouls": 13,
+        "corners": 1,
+        "possession": 48,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 388,
+        "passes_accurate": 331,
+        "passes_pct": 85,
+        "xg": 1.79
+      }
+    }
   }
 ]
