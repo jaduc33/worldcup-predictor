@@ -2313,7 +2313,10 @@
         "passes_pct": 63,
         "xg": 0.42
       }
-    }
+    },
+    "knockout": true,
+    "decided_by": "penalties",
+    "winner": "Paraguay"
   },
   {
     "home": "Netherlands",
@@ -2352,6 +2355,9 @@
         "passes_pct": 91,
         "xg": 1.4
       }
-    }
+    },
+    "knockout": true,
+    "decided_by": "penalties",
+    "winner": "Morocco"
   }
 ]
