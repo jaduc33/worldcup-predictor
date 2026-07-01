@@ -2359,5 +2359,122 @@
     "knockout": true,
     "decided_by": "penalties",
     "winner": "Morocco"
+  },
+  {
+    "home": "Ivory Coast",
+    "away": "Norway",
+    "score_home": 1,
+    "score_away": 2,
+    "rating_home_pre": 1760.2,
+    "rating_away_pre": 1930.6,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1564789,
+    "stats": {
+      "home": {
+        "shots_on_target": 5,
+        "total_shots": 14,
+        "fouls": 6,
+        "corners": 14,
+        "possession": 47,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 401,
+        "passes_accurate": 339,
+        "passes_pct": 85,
+        "xg": 1.36
+      },
+      "away": {
+        "shots_on_target": 4,
+        "total_shots": 9,
+        "fouls": 7,
+        "corners": 3,
+        "possession": 53,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 473,
+        "passes_accurate": 415,
+        "passes_pct": 88,
+        "xg": 2.02
+      }
+    }
+  },
+  {
+    "home": "France",
+    "away": "Sweden",
+    "score_home": 3,
+    "score_away": 0,
+    "rating_home_pre": 2120.3,
+    "rating_away_pre": 1745.7,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1565177,
+    "stats": {
+      "home": {
+        "shots_on_target": 12,
+        "total_shots": 25,
+        "fouls": 14,
+        "corners": 9,
+        "possession": 61,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 551,
+        "passes_accurate": 485,
+        "passes_pct": 88,
+        "xg": 3.17
+      },
+      "away": {
+        "shots_on_target": 3,
+        "total_shots": 8,
+        "fouls": 10,
+        "corners": 1,
+        "possession": 39,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 352,
+        "passes_accurate": 280,
+        "passes_pct": 80,
+        "xg": 0.65
+      }
+    }
+  },
+  {
+    "home": "Mexico",
+    "away": "Ecuador",
+    "score_home": 2,
+    "score_away": 0,
+    "rating_home_pre": 1918.2,
+    "rating_away_pre": 1887.2,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1567306,
+    "stats": {
+      "home": {
+        "shots_on_target": 3,
+        "total_shots": 15,
+        "fouls": 10,
+        "corners": 3,
+        "possession": 43,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 319,
+        "passes_accurate": 249,
+        "passes_pct": 78,
+        "xg": 1.02
+      },
+      "away": {
+        "shots_on_target": 1,
+        "total_shots": 7,
+        "fouls": 14,
+        "corners": 8,
+        "possession": 57,
+        "yellow_cards": 3,
+        "red_cards": 1,
+        "passes": 407,
+        "passes_accurate": 340,
+        "passes_pct": 84,
+        "xg": 0.73
+      }
+    }
   }
 ]
