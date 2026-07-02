@@ -2476,5 +2476,72 @@
         "xg": 0.73
       }
     }
+  },
+  {
+    "home": "Belgium",
+    "away": "Senegal",
+    "score_home": 3,
+    "score_away": 2,
+    "rating_home_pre": 1882.8,
+    "rating_away_pre": 1829.9,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "fixture_id": 1567308,
+    "stats": {
+      "home": {
+        "shots_on_target": 5,
+        "total_shots": 19,
+        "fouls": 22,
+        "corners": 4,
+        "possession": 52,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 699,
+        "passes_accurate": 602,
+        "passes_pct": 86,
+        "xg": 1.8
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 19,
+        "fouls": 12,
+        "corners": 2,
+        "possession": 48,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 639,
+        "passes_accurate": 536,
+        "passes_pct": 84,
+        "xg": 3.54
+      }
+    }
+  },
+  {
+    "home": "England",
+    "away": "DR Congo",
+    "score_home": 2,
+    "score_away": 1,
+    "rating_home_pre": 2034.3,
+    "rating_away_pre": 1694.1,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 7,
+        "total_shots": 16,
+        "possession": 60,
+        "passes_accurate": 517,
+        "passes_pct": 91,
+        "corners": 5
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 7,
+        "possession": 40,
+        "passes_accurate": 365,
+        "passes_pct": 82,
+        "corners": 3
+      }
+    }
   }
 ]
