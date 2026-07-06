@@ -2543,5 +2543,342 @@
         "corners": 3
       }
     }
+  },
+  {
+    "home": "Brazil",
+    "away": "Norway",
+    "score_home": 1,
+    "score_away": 2,
+    "rating_home_pre": 2008.4,
+    "rating_away_pre": 1941.5,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1568100,
+    "stats": {
+      "home": {
+        "shots_on_target": 4,
+        "total_shots": 14,
+        "fouls": 7,
+        "corners": 5,
+        "possession": 34,
+        "yellow_cards": 1,
+        "red_cards": 0,
+        "passes": 329,
+        "passes_accurate": 279,
+        "passes_pct": 85,
+        "xg": 2.73
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 9,
+        "fouls": 6,
+        "corners": 5,
+        "possession": 66,
+        "yellow_cards": 0,
+        "red_cards": 0,
+        "passes": 680,
+        "passes_accurate": 617,
+        "passes_pct": 91,
+        "xg": 0.84
+      }
+    }
+  },
+  {
+    "home": "Mexico",
+    "away": "England",
+    "score_home": 2,
+    "score_away": 3,
+    "rating_home_pre": 1945.5,
+    "rating_away_pre": 2039.2,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "fixture_id": 1570714,
+    "stats": {
+      "home": {
+        "shots_on_target": 5,
+        "total_shots": 20,
+        "fouls": 14,
+        "corners": 12,
+        "possession": 67,
+        "yellow_cards": 2,
+        "red_cards": 0,
+        "passes": 455,
+        "passes_accurate": 420,
+        "passes_pct": 92,
+        "xg": 1.87
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 6,
+        "fouls": 7,
+        "corners": 2,
+        "possession": 33,
+        "yellow_cards": 4,
+        "red_cards": 1,
+        "passes": 244,
+        "passes_accurate": 195,
+        "passes_pct": 80,
+        "xg": 1.55
+      }
+    }
+  },
+  {
+    "home": "USA",
+    "away": "Bosnia and Herzegovina",
+    "score_home": 2,
+    "score_away": 0,
+    "rating_home_pre": 1849.7,
+    "rating_away_pre": 1624.2,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 2,
+        "total_shots": 8,
+        "possession": 48,
+        "passes_accurate": 415,
+        "passes_pct": 84,
+        "corners": 4
+      },
+      "away": {
+        "shots_on_target": 3,
+        "total_shots": 10,
+        "possession": 52,
+        "passes_accurate": 447,
+        "passes_pct": 82,
+        "corners": 3
+      }
+    }
+  },
+  {
+    "home": "Spain",
+    "away": "Austria",
+    "score_home": 3,
+    "score_away": 0,
+    "rating_home_pre": 2139.2,
+    "rating_away_pre": 1855.1,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 10,
+        "total_shots": 23,
+        "possession": 64,
+        "passes_accurate": 629,
+        "passes_pct": 91,
+        "corners": 9
+      },
+      "away": {
+        "shots_on_target": 0,
+        "total_shots": 5,
+        "possession": 36,
+        "passes_accurate": 347,
+        "passes_pct": 82,
+        "corners": 0
+      }
+    }
+  },
+  {
+    "home": "Portugal",
+    "away": "Croatia",
+    "score_home": 2,
+    "score_away": 1,
+    "rating_home_pre": 1988.5,
+    "rating_away_pre": 1906.1,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 3,
+        "total_shots": 15,
+        "possession": 60,
+        "passes_accurate": 585,
+        "passes_pct": 91,
+        "corners": 9
+      },
+      "away": {
+        "shots_on_target": 6,
+        "total_shots": 13,
+        "possession": 40,
+        "passes_accurate": 370,
+        "passes_pct": 84,
+        "corners": 5
+      }
+    }
+  },
+  {
+    "home": "Switzerland",
+    "away": "Algeria",
+    "score_home": 2,
+    "score_away": 0,
+    "rating_home_pre": 1864.0,
+    "rating_away_pre": 1770.5,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 5,
+        "total_shots": 11,
+        "possession": 45,
+        "passes_accurate": 438,
+        "passes_pct": 81,
+        "corners": 4
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 8,
+        "possession": 55,
+        "passes_accurate": 563,
+        "passes_pct": 85,
+        "corners": 2
+      }
+    }
+  },
+  {
+    "home": "Australia",
+    "away": "Egypt",
+    "score_home": 1,
+    "score_away": 1,
+    "rating_home_pre": 1830.1,
+    "rating_away_pre": 1731.9,
+    "outcome": "draw",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 1,
+        "total_shots": 16,
+        "possession": 42,
+        "passes_accurate": 505,
+        "passes_pct": 80,
+        "corners": 4
+      },
+      "away": {
+        "shots_on_target": 3,
+        "total_shots": 14,
+        "possession": 58,
+        "passes_accurate": 722,
+        "passes_pct": 85,
+        "corners": 7
+      }
+    },
+    "knockout": true,
+    "decided_by": "penalties",
+    "penalty_score": "4-2",
+    "winner": "Egypt"
+  },
+  {
+    "home": "Argentina",
+    "away": "Cape Verde",
+    "score_home": 3,
+    "score_away": 2,
+    "rating_home_pre": 2149.1,
+    "rating_away_pre": 1617.4,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 10,
+        "total_shots": 22,
+        "possession": 64,
+        "passes_accurate": 850,
+        "passes_pct": 92,
+        "corners": 8
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 16,
+        "possession": 36,
+        "passes_accurate": 476,
+        "passes_pct": 86,
+        "corners": 8
+      }
+    },
+    "knockout": true,
+    "decided_by": "extra_time",
+    "score_90min": "1-1"
+  },
+  {
+    "home": "Colombia",
+    "away": "Ghana",
+    "score_home": 1,
+    "score_away": 0,
+    "rating_home_pre": 1997.3,
+    "rating_away_pre": 1554.2,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 8,
+        "total_shots": 20,
+        "possession": 61,
+        "passes_accurate": 586,
+        "passes_pct": 91,
+        "corners": 3
+      },
+      "away": {
+        "shots_on_target": 0,
+        "total_shots": 8,
+        "possession": 39,
+        "passes_accurate": 376,
+        "passes_pct": 83,
+        "corners": 2
+      }
+    }
+  },
+  {
+    "home": "Canada",
+    "away": "Morocco",
+    "score_home": 0,
+    "score_away": 3,
+    "rating_home_pre": 1765.5,
+    "rating_away_pre": 1877.7,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 3,
+        "total_shots": 10,
+        "possession": 45,
+        "passes_accurate": 359,
+        "passes_pct": 76,
+        "corners": 11
+      },
+      "away": {
+        "shots_on_target": 4,
+        "total_shots": 5,
+        "possession": 55,
+        "passes_accurate": 473,
+        "passes_pct": 82,
+        "corners": 1
+      }
+    }
+  },
+  {
+    "home": "Paraguay",
+    "away": "France",
+    "score_home": 0,
+    "score_away": 1,
+    "rating_home_pre": 1759.6,
+    "rating_away_pre": 2127.6,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 0,
+        "total_shots": 5,
+        "possession": 24,
+        "passes_accurate": 183,
+        "passes_pct": 54,
+        "corners": 2
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 15,
+        "possession": 76,
+        "passes_accurate": 569,
+        "passes_pct": 90,
+        "corners": 12
+      }
+    }
   }
 ]
