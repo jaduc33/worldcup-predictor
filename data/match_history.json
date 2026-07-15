@@ -3020,5 +3020,117 @@
         "corners": 5
       }
     }
+  },
+  {
+    "home": "Spain",
+    "away": "Belgium",
+    "score_home": 2,
+    "score_away": 1,
+    "rating_home_pre": 2162.6,
+    "rating_away_pre": 1931.1,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 8,
+        "total_shots": 17,
+        "possession": 68,
+        "passes_accurate": 664,
+        "passes_pct": 90,
+        "corners": 5
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 5,
+        "possession": 32,
+        "passes_accurate": 312,
+        "passes_pct": 78,
+        "corners": 1
+      }
+    }
+  },
+  {
+    "home": "Norway",
+    "away": "England",
+    "score_home": 1,
+    "score_away": 2,
+    "rating_home_pre": 1965.3,
+    "rating_away_pre": 2053.9,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 4,
+        "total_shots": 13,
+        "possession": 48,
+        "passes_accurate": 577,
+        "passes_pct": 86,
+        "corners": 7
+      },
+      "away": {
+        "shots_on_target": 8,
+        "total_shots": 14,
+        "possession": 52,
+        "passes_accurate": 628,
+        "passes_pct": 90,
+        "corners": 4
+      }
+    }
+  },
+  {
+    "home": "Argentina",
+    "away": "Switzerland",
+    "score_home": 3,
+    "score_away": 1,
+    "rating_home_pre": 2154.3,
+    "rating_away_pre": 1892.4,
+    "outcome": "home_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 7,
+        "total_shots": 22,
+        "possession": 59,
+        "passes_accurate": 691,
+        "passes_pct": 89,
+        "corners": 8
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 11,
+        "possession": 41,
+        "passes_accurate": 474,
+        "passes_pct": 84,
+        "corners": 2
+      }
+    }
+  },
+  {
+    "home": "France",
+    "away": "Spain",
+    "score_home": 0,
+    "score_away": 2,
+    "rating_home_pre": 2144.5,
+    "rating_away_pre": 2170.9,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 3,
+        "total_shots": 10,
+        "possession": 49,
+        "passes_accurate": 472,
+        "passes_pct": 84,
+        "corners": 7
+      },
+      "away": {
+        "shots_on_target": 2,
+        "total_shots": 10,
+        "possession": 51,
+        "passes_accurate": 502,
+        "passes_pct": 85,
+        "corners": 1
+      }
+    }
   }
 ]
