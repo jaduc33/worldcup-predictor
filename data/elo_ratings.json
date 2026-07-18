@@ -2,10 +2,10 @@
   "_note": "SEED VALUES — rough approximations of national-team Elo, used only to bootstrap the model. Replace at runtime with live data (e.g. eloratings.net) via the ratings tool. The whole point of the architecture is that this file is swappable.",
   "source": "post-match",
   "ratings": {
-    "Argentina": 2165.2,
+    "Argentina": 2179.8,
     "France": 2116.8,
     "Spain": 2198.6,
-    "England": 2068.9,
+    "England": 2054.3,
     "Brazil": 1984.6,
     "Portugal": 1991.8,
     "Netherlands": 1961.7,

@@ -3132,5 +3132,33 @@
         "corners": 1
       }
     }
+  },
+  {
+    "home": "England",
+    "away": "Argentina",
+    "score_home": 1,
+    "score_away": 2,
+    "rating_home_pre": 2068.9,
+    "rating_away_pre": 2165.2,
+    "outcome": "away_win",
+    "competition": "World Cup",
+    "stats": {
+      "home": {
+        "shots_on_target": 2,
+        "total_shots": 5,
+        "possession": 36,
+        "passes_accurate": 325,
+        "passes_pct": 84,
+        "corners": 2
+      },
+      "away": {
+        "shots_on_target": 5,
+        "total_shots": 15,
+        "possession": 64,
+        "passes_accurate": 588,
+        "passes_pct": 91,
+        "corners": 6
+      }
+    }
   }
 ]
